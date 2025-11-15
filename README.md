@@ -63,5 +63,5 @@ MediBot-Project/
         └── logo.png
 📄 License
 Ce projet est sous MIT License. Voir le fichier LICENSE pour plus d’informations.
-✨ Capture d’écran 
+✨ Capture d’écran ()
 ![Logo MediBot](assets/images/logo.png)
