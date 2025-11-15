@@ -7,16 +7,16 @@ import logging
 import requests
 
 # Ajouter le chemin source
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(_file_))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from src.chatbot.assistant_medical import AssistantMedicalGPT
 
 # Configuration
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(_name_)
+logger = logging.getLogger(__name__)
 
 class InterfaceMediBot:
-    def _init_(self):
+    def __init__(self):
         self.assistant = None
         self._initialiser_page()
         self._initialiser_assistant()
@@ -72,9 +72,9 @@ class InterfaceMediBot:
         """Initialise l'assistant médical"""
         try:
             self.assistant = AssistantMedicalGPT()
-            st.sidebar.success("✅ Assistant médical initialisé")
+            st.sidebar.success("Assistant médical initialisé")
         except Exception as e:
-            st.sidebar.error(f"❌ Erreur initialisation: {e}")
+            st.sidebar.error(f"Erreur initialisation: {e}")
             self.assistant = None
 
     def _verifier_serveur_mcp(self):
@@ -111,17 +111,19 @@ class InterfaceMediBot:
             
             # Statut serveur MCP
             if self._verifier_serveur_mcp():
-                st.success("✅ Serveur médical connecté")
+                st.success("Serveur médical connecté")
             else:
-                st.error("❌ Serveur médical hors ligne")
+                st.error("Serveur médical hors ligne")
                 st.info("Démarrez le serveur avec: python src/server/serveur_medical.py")
 
-            # Statut OpenAI
-            if self.assistant and self.assistant.openai_api_key:
-                st.success("✅ API OpenAI configurée")
+            # Vérifier si l'assistant a une clé API (openai_api_key peut ne pas exister)
+            api_key = getattr(self.assistant, "openai_api_key", None)
+            if api_key:
+                st.success("API OpenAI configurée")
             else:
                 st.warning("⚠ Clé API OpenAI manquante")
                 st.info("Ajoutez votre clé dans le fichier .env")
+    
 
             st.markdown("---")
             st.header("📖 Guide d'utilisation")
@@ -169,7 +171,7 @@ class InterfaceMediBot:
                 
                 return img_bytes, uploaded_file.name
             except Exception as e:
-                st.error(f"❌ Erreur lors du chargement de l'image: {e}")
+                st.error(f"Erreur lors du chargement de l'image: {e}")
                 return None, None
         
         return None, None
@@ -191,7 +193,7 @@ class InterfaceMediBot:
                     return True
                     
                 except Exception as e:
-                    st.error(f"❌ Erreur lors de l'analyse: {e}")
+                    st.error(f"Erreur lors de l'analyse: {e}")
                     return False
         return False
 
@@ -224,10 +226,10 @@ class InterfaceMediBot:
                             st.markdown(response)
                             st.session_state.messages.append({"role": "assistant", "content": response})
                         except Exception as e:
-                            error_msg = f"❌ Erreur: {str(e)}"
+                            error_msg = f"Erreur: {str(e)}"
                             st.error(error_msg)
             else:
-                st.error("❌ Assistant non disponible")
+                st.error("Assistant non disponible")
 
     def lancer_interface(self):
         """Lance l'interface principale"""
@@ -289,5 +291,5 @@ def main():
     interface = InterfaceMediBot()
     interface.lancer_interface()
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     main()

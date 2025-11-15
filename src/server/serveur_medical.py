@@ -13,10 +13,11 @@ import logging
 
 # Configuration du logging
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(_name_)
+logger = logging.getLogger(__name__)
+
 
 # Ajouter le chemin source pour les imports
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(_file_))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 app = FastAPI(
     title="MediBot MCP Server",
@@ -34,13 +35,13 @@ app.add_middleware(
 )
 
 class PneumoniaClassifier:
-    def _init_(self, model_path: str):
+    def __init__(self, model_path: str):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model_path = model_path
         self.model = self._load_model()
         self.transform = self._get_transforms()
         self.class_names = ['NORMAL', 'PNEUMONIA']
-        logger.info("✅ Classificateur de pneumonie initialisé")
+        logger.info("Classificateur de pneumonie initialisé")
 
     def _create_model_architecture(self):
         """Crée l'architecture du modèle identique à l'entraînement"""
@@ -64,10 +65,10 @@ class PneumoniaClassifier:
         """Charge le modèle entraîné"""
         try:
             if not os.path.exists(self.model_path):
-                logger.error(f"❌ Fichier modèle non trouvé: {self.model_path}")
+                logger.error(f"Fichier modèle non trouvé: {self.model_path}")
                 return None
             
-            logger.info(f"📁 Chargement du modèle depuis: {self.model_path}")
+            logger.info(f"Chargement du modèle depuis: {self.model_path}")
             model = self._create_model_architecture()
             
             # Charger les poids
@@ -83,11 +84,11 @@ class PneumoniaClassifier:
             
             model.eval()
             model.to(self.device)
-            logger.info("✅ Modèle chargé avec succès")
+            logger.info("Modèle chargé avec succès")
             return model
             
         except Exception as e:
-            logger.error(f"❌ Erreur chargement modèle: {e}")
+            logger.error(f"Erreur chargement modèle: {e}")
             return None
 
     def _get_transforms(self):
@@ -127,11 +128,11 @@ class PneumoniaClassifier:
             }
             
         except Exception as e:
-            logger.error(f"❌ Erreur prédiction: {e}")
+            logger.error(f"Erreur prédiction: {e}")
             return {'error': str(e), 'status': 'error'}
 
 # Initialisation du classifieur
-model_path = os.getenv('MODEL_PATH', 'models/pneumonia_classifier_inference.pth')
+model_path = os.getenv('MODEL_PATH', 'models/pneumonia_classifier_inference_20251115_163236.pth')
 classifier = PneumoniaClassifier(model_path)
 
 @app.get("/")
@@ -179,14 +180,14 @@ async def predict_pneumonia(file: UploadFile = File(...)):
         if result['status'] == 'error':
             raise HTTPException(status_code=500, detail=result['error'])
         
-        logger.info(f"📊 Prédiction effectuée: {result['prediction']} (confiance: {result['confidence']:.2f})")
+        logger.info(f"Prédiction effectuée: {result['prediction']} (confiance: {result['confidence']:.2f})")
         
         return result
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Erreur traitement: {str(e)}")
+        logger.error(f"Erreur traitement: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erreur lors du traitement: {str(e)}")
 
 @app.get("/model/info")
@@ -201,7 +202,7 @@ async def model_info():
         "device": str(classifier.device)
     }
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     port = int(os.getenv("MCP_SERVER_PORT", 8000))
     logger.info(f"🚀 Démarrage du serveur MCP sur le port {port}")
     uvicorn.run(app, host="0.0.0.0", port=port)

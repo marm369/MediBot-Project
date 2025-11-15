@@ -6,17 +6,20 @@ from PIL import Image
 import io
 import logging
 from dotenv import load_dotenv
+import requests
 
 # Ajouter le chemin source pour les imports
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(_file_))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 # Configuration du logging
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(_name_)
+logger = logging.getLogger(__name__)
 
 class AssistantMedicalGPT:
-    def _init_(self):
+    def __init__(self):
         # Charger la configuration
+        self.mcp_server_url = "http://localhost:8000/predict"
+
         self._load_config()
         
         # Initialiser le client OpenAI
@@ -68,7 +71,7 @@ Le modèle peut détecter deux conditions:
 - NORMAL: Radiographie sans signe de pneumonie
 - PNEUMONIA: Radiographie montrant des signes de pneumonie"""
 
-        logger.info("✅ Assistant médical GPT initialisé")
+        logger.info("Assistant médical GPT initialisé")
 
     def _load_config(self):
         """Charge la configuration depuis les variables d'environnement"""
@@ -86,13 +89,34 @@ Le modèle peut détecter deux conditions:
         
         logger.info(f"🌐 Serveur MCP: {self.mcp_server_url}")
 
+    # def _check_mcp_server(self):
+    #     """Vérifie la connexion au serveur MCP"""
+    #     try:
+    #         response = requests.get(f"{self.mcp_server_url}/health", timeout=10)
+    #         return response.status_code == 200
+    #     except:
+    #         return False
+
+
+
+
+
     def _check_mcp_server(self):
-        """Vérifie la connexion au serveur MCP"""
+        """Vérifie si le serveur MCP est en ligne."""
         try:
-            response = requests.get(f"{self.mcp_server_url}/health", timeout=10)
-            return response.status_code == 200
-        except:
+            url = "http://localhost:8000/health"
+            response = requests.get(url, timeout=3)
+
+            if response.status_code == 200:
+                data = response.json()
+                return data.get("status") == "healthy"
             return False
+
+        except Exception:
+            return False
+
+
+
 
     def analyser_image(self, image_bytes: bytes, question_utilisateur: str = "") -> str:
         """
@@ -108,24 +132,24 @@ Le modèle peut détecter deux conditions:
         try:
             # Vérifier la connexion au serveur MCP
             if not self._check_mcp_server():
-                return "❌ Serveur médical indisponible. Veuillez démarrer le serveur MCP."
+                return "Serveur médical indisponible. Veuillez démarrer le serveur MCP."
 
             # 1. Envoyer l'image au serveur MCP pour classification
-            logger.info("🔄 Analyse de l'image par le modèle médical...")
+            logger.info("Analyse de l'image par le modèle médical...")
             files = {"file": ("radiographie.jpg", image_bytes, "image/jpeg")}
             response_mcp = requests.post(f"{self.mcp_server_url}/predict", files=files, timeout=30)
             
             if response_mcp.status_code != 200:
                 error_msg = response_mcp.text
-                logger.error(f"❌ Erreur serveur MCP: {error_msg}")
-                return f"❌ Erreur lors de l'analyse médicale: {error_msg}"
+                logger.error(f"Erreur serveur MCP: {error_msg}")
+                return f"Erreur lors de l'analyse médicale: {error_msg}"
             
             resultat_analyse = response_mcp.json()
             
             if resultat_analyse.get('status') != 'success':
                 error_msg = resultat_analyse.get('error', 'Erreur inconnue')
-                logger.error(f"❌ Erreur analyse: {error_msg}")
-                return f"❌ Erreur lors de l'analyse: {error_msg}"
+                logger.error(f"Erreur analyse: {error_msg}")
+                return f"Erreur lors de l'analyse: {error_msg}"
             
             # 2. Préparer les données pour GPT-4
             prediction = resultat_analyse['prediction']
@@ -136,7 +160,7 @@ Le modèle peut détecter deux conditions:
             prompt_utilisateur = self._construire_prompt(prediction, confidence, probabilities, question_utilisateur)
             
             # 4. Appel à GPT-4
-            logger.info("🤖 Génération de l'explication par GPT-4...")
+            logger.info("Génération de l'explication par GPT-4...")
             reponse = self.client.chat.completions.create(
                 model="gpt-4",
                 messages=[
@@ -149,25 +173,25 @@ Le modèle peut détecter deux conditions:
             )
             
             explanation = reponse.choices[0].message.content
-            logger.info("✅ Explication générée avec succès")
+            logger.info("Explication générée avec succès")
             
             return explanation
             
         except requests.exceptions.Timeout:
             logger.error("⏰ Timeout lors de la communication avec le serveur MCP")
-            return "❌ Délai d'attente dépassé. Le serveur médical met trop de temps à répondre."
+            return "Délai d'attente dépassé. Le serveur médical met trop de temps à répondre."
         except requests.exceptions.ConnectionError:
             logger.error("🔌 Erreur de connexion au serveur MCP")
-            return "❌ Impossible de se connecter au serveur médical. Vérifiez qu'il est démarré."
+            return "Impossible de se connecter au serveur médical. Vérifiez qu'il est démarré."
         except openai.APITimeoutError:
             logger.error("⏰ Timeout API OpenAI")
-            return "❌ Délai dépassé avec l'API OpenAI. Veuillez réessayer."
+            return "Délai dépassé avec l'API OpenAI. Veuillez réessayer."
         except openai.AuthenticationError:
-            logger.error("🔑 Erreur d'authentification OpenAI")
-            return "❌ Erreur d'authentification avec l'API OpenAI. Vérifiez votre clé API."
+            logger.error("Erreur d'authentification OpenAI")
+            return "Erreur d'authentification avec l'API OpenAI. Vérifiez votre clé API."
         except Exception as e:
-            logger.error(f"❌ Erreur inattendue: {str(e)}")
-            return f"❌ Une erreur inattendue s'est produite: {str(e)}"
+            logger.error(f" Erreur inattendue: {str(e)}")
+            return f" Une erreur inattendue s'est produite: {str(e)}"
 
     def _construire_prompt(self, prediction: str, confidence: float, probabilities: dict, question_utilisateur: str) -> str:
         """Construit le prompt pour GPT-4 basé sur les résultats de l'analyse"""
@@ -175,7 +199,7 @@ Le modèle peut détecter deux conditions:
         base_prompt = f"""
 RÉSULTAT DE L'ANALYSE MÉDICALE AUTOMATISÉE:
 
-📊 *Résultats de la classification:*
+*Résultats de la classification:*
 - *Diagnostic:* {prediction}
 - *Niveau de confiance:* {confidence:.1%}
 - *Probabilité NORMAL:* {probabilities['NORMAL']:.1%}
@@ -229,20 +253,20 @@ Merci de faire preuve d'empathie et de professionnalisme dans votre réponse.
             )
             return reponse.choices[0].message.content
         except Exception as e:
-            logger.error(f"❌ Erreur chat direct: {str(e)}")
-            return f"❌ Erreur lors de la génération de la réponse: {str(e)}"
+            logger.error(f"Erreur chat direct: {str(e)}")
+            return f"Erreur lors de la génération de la réponse: {str(e)}"
 
 # Test de l'assistant
-if _name_ == "_main_":
+if __name__ == "__main__":
     try:
         assistant = AssistantMedicalGPT()
-        print("✅ Assistant médical GPT initialisé avec succès!")
+        print("Assistant médical GPT initialisé avec succès!")
         
         # Test de connexion MCP
         if assistant._check_mcp_server():
-            print("✅ Serveur MCP connecté")
+            print("Serveur MCP connecté")
         else:
-            print("❌ Serveur MCP inaccessible")
+            print("Serveur MCP inaccessible")
             
     except Exception as e:
-        print(f"❌ Erreur initialisation: {e}")
+        print(f"Erreur initialisation: {e}")
