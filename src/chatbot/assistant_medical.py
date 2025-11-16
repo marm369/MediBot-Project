@@ -6,10 +6,10 @@ from PIL import Image
 import io
 import logging
 from dotenv import load_dotenv
-import requests
-
-# Ajouter le chemin source pour les imports
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+from typing import Optional, Dict, Any
+import torch
+import torch.nn as nn
+from torchvision import models, transforms
 
 # Configuration du logging
 logging.basicConfig(level=logging.INFO)
@@ -18,255 +18,255 @@ logger = logging.getLogger(__name__)
 class AssistantMedicalGPT:
     def __init__(self):
         # Charger la configuration
-        self.mcp_server_url = "http://localhost:8000/predict"
-
         self._load_config()
         
-        # Initialiser le client OpenAI
-        self.client = openai.OpenAI(api_key=self.openai_api_key)
-        self.mcp_url = self.mcp_server_url
+        # Initialiser le client OpenAI si disponible
+        self.use_gpt4 = False
+        self.client = None
         
-        # Prompt système pour le chatbot médical
-        self.prompt_system = """Vous êtes Dr. IA, un assistant médical spécialisé en radiologie pulmonaire.
+        if self.openai_api_key and self.openai_api_key != 'votre_cle_api_openai_ici':
+            try:
+                self.client = openai.OpenAI(api_key=self.openai_api_key)
+                self.use_gpt4 = True
+                logger.info("✅ GPT-4 disponible pour informations générales")
+            except Exception as e:
+                logger.error(f"❌ Erreur initialisation OpenAI: {e}")
+                self.client = None
+                self.use_gpt4 = False
+        else:
+            logger.warning("⚠ GPT-4 non disponible - utilisation des réponses prédéfinies")
+        
+        # Prompt système pour GPT-4
+        self.prompt_system = """Vous êtes Dr. IA, un assistant médical intelligent.
 
-VOTRE RÔLE:
-- Assistant médical virtuel pour l'analyse des radiographies pulmonaires
-- Expliquer les résultats de façon claire, simple et empathique
-- Donner des informations éducatives sur la pneumonie
-- Toujours recommander de consulter un médecin pour confirmation
-
-COMPÉTENCES:
-1. *Analyse de radiographies*: Interpréter les résultats de classification IA
-2. *Explication médicale*: Traduire les termes techniques en langage simple
-3. *Conseils pratiques*: Donner des recommandations appropriées
-4. *Information éducative*: Expliquer ce qu'est la pneumonie, ses causes, symptômes
+VOTRE RÔLE PRINCIPAL:
+- Expliquer les résultats médicaux de façon claire et pédagogique
+- Répondre aux questions générales sur la santé pulmonaire
+- Fournir des informations éducatives sur les maladies respiratoires
 
 INSTRUCTIONS IMPORTANTES:
-- Pour les analyses d'image: expliquez le résultat (NORMAL/PNEUMONIA) et le niveau de confiance
-- Donnez des informations sur ce que signifie le diagnostic
-- Fournissez des conseils appropriés selon le résultat
-- Insistez sur l'importance d'un avis médical professionnel
-- Soyez rassurant mais honnête
-- Utilisez un langage accessible sans être trop technique
+- Insistez toujours sur l'importance d'un avis médical professionnel
+- Soyez empathique et rassurant
+- Utilisez un langage accessible
+- Ne posez jamais de diagnostic définitif
+- Ne remplacez pas un avis médical qualifié
 
-TONE:
-- Professionnel mais accessible
-- Empathique et rassurant
-- Pédagogique
-- Jamais alarmiste
+DOMAINES D'EXPERTISE:
+- Pneumologie et maladies respiratoires
+- Symptômes et traitements
+- Prévention et mode de vie sain
+- Explications des procédures médicales"""
 
-NE JAMAIS:
-- Poser un diagnostic définitif
-- Recommander des traitements spécifiques
-- Remplacer un avis médical qualifié
-- Être trop technique sans explication
-
-EXEMPLE DE RÉPONSE:
-"Bonjour! Suite à l'analyse de votre radiographie, le système a détecté [NORMAL/PNEUMONIA] avec un niveau de confiance de [X]%. 
-Cela signifie que [explication simple]. Je vous recommande de [conseil approprié]. 
-N'oubliez pas que ce résultat doit être confirmé par un radiologue."
-
-CAPACITÉS DU SYSTÈME:
-Le modèle peut détecter deux conditions:
-- NORMAL: Radiographie sans signe de pneumonie
-- PNEUMONIA: Radiographie montrant des signes de pneumonie"""
-
-        logger.info("Assistant médical GPT initialisé")
+        logger.info("Assistant médical initialisé")
 
     def _load_config(self):
         """Charge la configuration depuis les variables d'environnement"""
-        # Charger depuis .env ou .env.example
         env_file = '.env' if os.path.exists('.env') else '.env.example'
         load_dotenv(env_file)
         
         self.openai_api_key = os.getenv('OPENAI_API_KEY')
-        self.mcp_server_url = os.getenv('MCP_SERVER_URL', 'http://localhost:8000')
         
         if not self.openai_api_key or self.openai_api_key == 'votre_cle_api_openai_ici':
-            logger.warning("⚠ Clé API OpenAI non configurée")
-            if env_file == '.env.example':
-                logger.warning("ℹ Utilisation de .env.example - Créez un fichier .env avec votre vraie clé API")
-        
-        logger.info(f"🌐 Serveur MCP: {self.mcp_server_url}")
+            logger.warning("⚠ Clé API OpenAI non configurée - mode local uniquement")
 
-    # def _check_mcp_server(self):
-    #     """Vérifie la connexion au serveur MCP"""
-    #     try:
-    #         response = requests.get(f"{self.mcp_server_url}/health", timeout=10)
-    #         return response.status_code == 200
-    #     except:
-    #         return False
-
-
-
-
-
-    def _check_mcp_server(self):
-        """Vérifie si le serveur MCP est en ligne."""
+    def analyser_image_via_serveur(self, image_bytes: bytes, question_utilisateur: str = "") -> str:
+        """
+        Analyse une image via le serveur de classification
+        """
         try:
-            url = "http://localhost:8000/health"
-            response = requests.get(url, timeout=3)
-
+            files = {"file": ("image.jpg", image_bytes, "image/jpeg")}
+            response = requests.post("http://localhost:8000/predict", files=files)
+            
             if response.status_code == 200:
-                data = response.json()
-                return data.get("status") == "healthy"
-            return False
-
-        except Exception:
-            return False
-
-
-
-
-    def analyser_image(self, image_bytes: bytes, question_utilisateur: str = "") -> str:
-        """
-        Analyse une image avec le modèle MCP puis génère une explication avec GPT-4
-        
-        Args:
-            image_bytes: Bytes de l'image à analyser
-            question_utilisateur: Question spécifique de l'utilisateur
-            
-        Returns:
-            str: Explication générée par GPT-4
-        """
-        try:
-            # Vérifier la connexion au serveur MCP
-            if not self._check_mcp_server():
-                return "Serveur médical indisponible. Veuillez démarrer le serveur MCP."
-
-            # 1. Envoyer l'image au serveur MCP pour classification
-            logger.info("Analyse de l'image par le modèle médical...")
-            files = {"file": ("radiographie.jpg", image_bytes, "image/jpeg")}
-            response_mcp = requests.post(f"{self.mcp_server_url}/predict", files=files, timeout=30)
-            
-            if response_mcp.status_code != 200:
-                error_msg = response_mcp.text
-                logger.error(f"Erreur serveur MCP: {error_msg}")
-                return f"Erreur lors de l'analyse médicale: {error_msg}"
-            
-            resultat_analyse = response_mcp.json()
-            
-            if resultat_analyse.get('status') != 'success':
-                error_msg = resultat_analyse.get('error', 'Erreur inconnue')
-                logger.error(f"Erreur analyse: {error_msg}")
-                return f"Erreur lors de l'analyse: {error_msg}"
-            
-            # 2. Préparer les données pour GPT-4
-            prediction = resultat_analyse['prediction']
-            confidence = resultat_analyse['confidence']
-            probabilities = resultat_analyse['probabilities']
-            
-            # 3. Construire le prompt pour GPT-4
-            prompt_utilisateur = self._construire_prompt(prediction, confidence, probabilities, question_utilisateur)
-            
-            # 4. Appel à GPT-4
-            logger.info("Génération de l'explication par GPT-4...")
-            reponse = self.client.chat.completions.create(
-                model="gpt-4",
-                messages=[
-                    {"role": "system", "content": self.prompt_system},
-                    {"role": "user", "content": prompt_utilisateur}
-                ],
-                max_tokens=1500,
-                temperature=0.7,
-                timeout=30
-            )
-            
-            explanation = reponse.choices[0].message.content
-            logger.info("Explication générée avec succès")
-            
-            return explanation
-            
-        except requests.exceptions.Timeout:
-            logger.error("⏰ Timeout lors de la communication avec le serveur MCP")
-            return "Délai d'attente dépassé. Le serveur médical met trop de temps à répondre."
-        except requests.exceptions.ConnectionError:
-            logger.error("🔌 Erreur de connexion au serveur MCP")
-            return "Impossible de se connecter au serveur médical. Vérifiez qu'il est démarré."
-        except openai.APITimeoutError:
-            logger.error("⏰ Timeout API OpenAI")
-            return "Délai dépassé avec l'API OpenAI. Veuillez réessayer."
-        except openai.AuthenticationError:
-            logger.error("Erreur d'authentification OpenAI")
-            return "Erreur d'authentification avec l'API OpenAI. Vérifiez votre clé API."
+                result = response.json()
+                if result['status'] == 'success':
+                    reponse_base = self._construire_reponse_locale(result, question_utilisateur)
+                    
+                    # Si GPT-4 est disponible et que l'utilisateur demande des explications, enrichir la réponse
+                    if self.use_gpt4 and ("explication" in question_utilisateur.lower() or "explique" in question_utilisateur.lower()):
+                        try:
+                            reponse_enrichie = self.client.chat.completions.create(
+                                model="gpt-4",
+                                messages=[
+                                    {"role": "system", "content": self.prompt_system},
+                                    {"role": "user", "content": f"Voici le résultat d'une analyse de radiographie: {result}. L'utilisateur demande: {question_utilisateur}. Fournissez une explication claire et pédagogique."}
+                                ],
+                                max_tokens=300,
+                                temperature=0.7
+                            )
+                            return reponse_base + "\n\n💡 **Explications détaillées:**\n" + reponse_enrichie.choices[0].message.content
+                        except Exception as e:
+                            logger.error(f"Erreur GPT-4: {e}")
+                            return reponse_base
+                    
+                    return reponse_base
+                else:
+                    return f"❌ Erreur lors de l'analyse: {result.get('error', 'Erreur inconnue')}"
+            else:
+                return f"❌ Erreur serveur: {response.status_code}"
+                
         except Exception as e:
-            logger.error(f" Erreur inattendue: {str(e)}")
-            return f" Une erreur inattendue s'est produite: {str(e)}"
+            logger.error(f"❌ Erreur analyse image: {e}")
+            return f"❌ Erreur lors de l'analyse de l'image: {str(e)}"
 
-    def _construire_prompt(self, prediction: str, confidence: float, probabilities: dict, question_utilisateur: str) -> str:
-        """Construit le prompt pour GPT-4 basé sur les résultats de l'analyse"""
+    def _construire_reponse_locale(self, resultat: Dict[str, Any], question: str) -> str:
+        """Construit une réponse basée sur les résultats de classification"""
+        prediction = resultat['prediction']
+        confidence = resultat['confidence']
+        prob_normal = resultat['probabilities']['NORMAL']
+        prob_pneumonia = resultat['probabilities']['PNEUMONIA']
         
-        base_prompt = f"""
-RÉSULTAT DE L'ANALYSE MÉDICALE AUTOMATISÉE:
+        # Réponse de base
+        if prediction == 'NORMAL':
+            base_reponse = f"""
+📊 RÉSULTAT DE L'ANALYSE
 
-*Résultats de la classification:*
-- *Diagnostic:* {prediction}
-- *Niveau de confiance:* {confidence:.1%}
-- *Probabilité NORMAL:* {probabilities['NORMAL']:.1%}
-- *Probabilité PNEUMONIA:* {probabilities['PNEUMONIA']:.1%}
+🎯 Diagnostic: {prediction}
+📈 Niveau de confiance: {confidence:.1%}
 
-"""
+📋 Détails:
+- Probabilité NORMAL: {prob_normal:.1%}
+- Probabilité PNEUMONIA: {prob_pneumonia:.1%}
 
-        if question_utilisateur:
-            base_prompt += f"""
-QUESTION SPÉCIFIQUE DE L'UTILISATEUR:
-"{question_utilisateur}"
-
+💡 Explication:
+L'analyse ne détecte pas de signes évidents de pneumonie sur cette radiographie.
 """
         else:
-            base_prompt += """
-L'utilisateur souhaite une explication de ces résultats.
+            base_reponse = f"""
+📊 RÉSULTAT DE L'ANALYSE
 
+🎯 Diagnostic: {prediction}
+📈 Niveau de confiance: {confidence:.1%}
+
+📋 Détails:
+- Probabilité NORMAL: {prob_normal:.1%}
+- Probabilité PNEUMONIA: {prob_pneumonia:.1%}
+
+💡 Explication:
+L'analyse détecte des signes évocateurs de pneumonie.
 """
 
-        base_prompt += """
-Veuillez fournir une analyse complète et empathique de ces résultats en:
-1. Expliquant ce que signifie ce diagnostic en termes simples
-2. Donnant des informations sur la condition détectée
-3. Fournissant des conseils appropriés pour la prochaine étape
-4. Rappelant l'importance d'une consultation médicale professionnelle
+        # Avertissement médical
+        base_reponse += f"""
 
-Merci de faire preuve d'empathie et de professionnalisme dans votre réponse.
+⚠ AVERTISSEMENT MÉDICAL IMPORTANT
+Ce résultat est fourni par une intelligence artificielle et ne remplace pas un diagnostic médical professionnel. 
+Consultez toujours un médecin qualifié pour toute décision médicale.
 """
 
-        return base_prompt
+        return base_reponse
 
-    def chat_direct(self, message_utilisateur: str) -> str:
+    def repondre_question_generale(self, question: str) -> str:
         """
-        Chat direct avec GPT pour questions générales sur la pneumonie
+        Répond aux questions générales en utilisant GPT-4 ou des réponses prédéfinies
+        """
+        # Si GPT-4 est disponible, l'utiliser pour les questions complexes
+        if self.use_gpt4 and self.client:
+            try:
+                reponse = self.client.chat.completions.create(
+                    model="gpt-4",
+                    messages=[
+                        {"role": "system", "content": self.prompt_system},
+                        {"role": "user", "content": question}
+                    ],
+                    max_tokens=500,
+                    temperature=0.7
+                )
+                return reponse.choices[0].message.content + """
+
+⚠ AVERTISSEMENT MÉDICAL IMPORTANT
+Ces informations sont fournies à titre éducatif et ne remplacent pas une consultation médicale. 
+Consultez toujours un professionnel de santé pour tout problème médical.
+"""
+            except Exception as e:
+                logger.error(f"Erreur GPT-4: {e}")
+                # Fallback sur les réponses prédéfinies
+
+        # Questions/réponses prédéfinies pour le mode local
+        faqs = {
+            "symptômes pneumonie": """
+🤒 Symptômes courants de la pneumonie:
+
+• Toux (sèche ou productive)
+• Fièvre et frissons
+• Difficultés respiratoires
+• Douleur thoracique
+• Fatigue importante
+• Transpiration excessive
+
+🩺 Quand consulter:
+Consultez un médecin si vous présentez ces symptômes, surtout si vous avez des difficultés respiratoires.
+""",
+            "causes pneumonie": """
+🦠 Causes principales de la pneumonie:
+
+• Bactéries (Streptococcus pneumoniae)
+• Virus (grippe, COVID-19, VRS)
+• Champignons (plus rare)
+• Aspiration de liquides ou aliments
+
+🎯 Facteurs de risque:
+Âge avancé, système immunitaire affaibli, tabagisme, maladies chroniques.
+""",
+            "traitement pneumonie": """
+💊 Traitements possibles:
+
+• Antibiotiques pour les pneumonies bactériennes
+• Antiviraux pour les pneumonies virales
+• Repos et hydratation
+• Médicaments contre la fièvre et la douleur
+• Oxygénothérapie si nécessaire
+
+📞 Important: Le traitement doit être prescrit par un médecin.
+""",
+            "prévention pneumonie": """
+🛡 Mesures préventives:
+
+• Vaccination (grippe, pneumocoque)
+• Hygiène des mains régulière
+• Éviter le tabagisme
+• Alimentation équilibrée
+• Exercice physique régulier
+"""
+        }
+
+        # Vérifier si c'est une question prédéfinie
+        question_lower = question.lower()
+        for key, response in faqs.items():
+            if key in question_lower:
+                return response
+
+        # Réponse par défaut pour le mode local
+        return """
+Je suis spécialisé dans l'analyse des radiographies pulmonaires. 
+
+Pour des questions médicales spécifiques, je vous recommande de:
+• Consulter un médecin généraliste
+• Visiter un service d'urgences en cas de symptômes graves
+• Contacter un pneumologue pour des problèmes pulmonaires
+
+📞 En cas d'urgence: Appelez le 15 (SAMU)
+
+⚠ AVERTISSEMENT MÉDICAL IMPORTANT
+Ces informations ne remplacent pas une consultation médicale professionnelle.
+"""
+
+    def chat(self, message_utilisateur: str, image_bytes: bytes = None) -> str:
+        """
+        Méthode principale de chat qui combine analyse d'images et questions générales
+        """
+        # Si une image est fournie, priorité à l'analyse d'image
+        if image_bytes:
+            return self.analyser_image_via_serveur(image_bytes, message_utilisateur)
         
-        Args:
-            message_utilisateur: Question de l'utilisateur
-            
-        Returns:
-            str: Réponse générée par GPT-4
-        """
-        try:
-            reponse = self.client.chat.completions.create(
-                model="gpt-4",
-                messages=[
-                    {"role": "system", "content": self.prompt_system},
-                    {"role": "user", "content": message_utilisateur}
-                ],
-                max_tokens=1000,
-                temperature=0.7
-            )
-            return reponse.choices[0].message.content
-        except Exception as e:
-            logger.error(f"Erreur chat direct: {str(e)}")
-            return f"Erreur lors de la génération de la réponse: {str(e)}"
+        # Sinon, répondre à la question générale
+        return self.repondre_question_generale(message_utilisateur)
 
 # Test de l'assistant
 if __name__ == "__main__":
     try:
         assistant = AssistantMedicalGPT()
-        print("Assistant médical GPT initialisé avec succès!")
+        print("✅ Assistant médical initialisé avec succès!")
         
-        # Test de connexion MCP
-        if assistant._check_mcp_server():
-            print("Serveur MCP connecté")
-        else:
-            print("Serveur MCP inaccessible")
-            
     except Exception as e:
-        print(f"Erreur initialisation: {e}")
+        print(f"❌ Erreur initialisation: {e}")
