@@ -27,7 +27,6 @@ wheels/
 MANIFEST
 
 # Models and large files
-*.pth
 *.pkl
 *.h5
 *.joblib
