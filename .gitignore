@@ -31,8 +31,6 @@ MANIFEST
 *.pkl
 *.h5
 *.joblib
-models/*.pth
-!models/pneumonia_classifier_inference.pth
 
 # Logs
 *.log
