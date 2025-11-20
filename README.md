@@ -51,8 +51,8 @@
    ```
 4. **Éditez le fichier .env et ajoutez :**
    ```bash
-   OPENAI_API_KEY=votre_cle_api_ici
-   MODEL_PATH=models/pneumonia_classifier_inference.pth
+   OPENAI_API_KEY="sk-svcacct-s9aWyV8Z7VFuEYczY_JCwnpVtpvLEWfmOt0NLhduMGdnhwjeHZH-KnTJayoFT3BlbkFJK2g8FVGv5BtazzSHHRuUFVXp3F3OyFntf7qlj_UQNlsNiqhlLDnUg58qWWQA"
+   MODEL_PATH=models/pneumonia_classifier_inference_20251115_163236.pth
    MCP_SERVER_PORT=8000
    MAX_FILE_SIZE_MB=10
    ```
