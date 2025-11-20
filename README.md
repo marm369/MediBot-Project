@@ -1,67 +1,109 @@
-🫁 MediBot – Assistant Médical Intelligent
-[Python](https://www.python.org/) | [License](LICENSE) | Version 1.0.0
-MediBot est un système d’intelligence artificielle innovant qui combine : 
-- Vision par ordinateur : utilisation de ResNet50 pour la classification des radiographies pulmonaires. 
-- Modèle de langage GPT-4 : génération d’explications médicales détaillées et compréhensibles. 
-- Interface conviviale Streamlit : pour une interaction simple et intuitive avec l’utilisateur.
-🚀 Fonctionnalités principales
-- Analyse d’images médicales : détection automatique de la pneumonie sur radiographies. 
-- Explications intelligentes : GPT-4 fournit des interprétations détaillées et pédagogiques. 
-- Interface simple : utilisateur guidé à travers une interface Streamlit épurée.
-🛠️ Installation
-1. Clonez le dépôt : 
-   git clone https://github.com/marm369/MediBot-Project.git 
-   cd MediBot-Project 
- 
-2. Créez un environnement virtuel : 
-   python -m venv venv 
-   source venv/bin/activate  # Linux/macOS 
-   venv\Scripts\activate   # Windows 
- 
-3. Installez les dépendances : 
-   pip install -r requirements.txt 
- 
-4. Configurez vos variables d’environnement : 
-   cp .env.example .env 
-   # puis ajoutez votre clé OpenAI dans .env
-💡 Utilisation
-Démarrez le système avec : 
-# Windows 
-scripts\demarrer_systeme.bat 
- 
-# Linux/macOS 
-bash scripts/demarrer_systeme.sh 
- 
-Ouvrez ensuite l’interface Streamlit : 
+# MediBot – Assistant Médical Intelligent
+
+![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Version](https://img.shields.io/badge/Version-1.0.0-orange)
+![Streamlit](https://img.shields.io/badge/Interface-Streamlit-red)
+![FastAPI](https://img.shields.io/badge/API-FastAPI-green)
+
+**MediBot** est un système d'intelligence artificielle innovant qui combine vision par ordinateur et modèles de langage pour l'assistance au diagnostic médical.
+
+## Fonctionnalités principales
+
+### Analyse médicale avancée
+- **Classification automatique** : Détection de pneumonie sur radiographies pulmonaires avec ResNet50
+- **Précision élevée** : Modèle entraîné sur 5,863 images médicales annotées
+- **Confiance mesurée** : Probabilités de prédiction et scores de confiance
+
+### Assistant conversationnel intelligent
+- **Explications détaillées** : Intégration GPT-4 pour des interprétations médicales pédagogiques
+- **Réponses contextuelles** : Adaptation aux résultats d'analyse et questions utilisateur
+- **Mode hors ligne** : Base de connaissances médicales prédéfinie en fallback
+
+### Interface utilisateur optimisée
+- **Interface intuitive** : Application Streamlit simple et épurée
+- **Upload facile** : Glisser-déposer des radiographies
+- **Historique conversationnel** : Suivi des analyses et discussions
+
+## Installation
+
+### Prérequis
+- Python 3.8 ou supérieur
+- 4GB RAM minimum
+- Connexion internet (optionnel pour GPT-4)
+
+### Installation pas à pas
+
+1. **Cloner le dépôt**
+   ```bash
+   git clone https://github.com/marm369/MediBot-Project.git
+   cd MediBot-Project
+   ```
+2. **Créer un environnement virtuel**
+   ```bash
+   python -m venv venv
+   # Activation selon votre OS
+   source venv/bin/activate          # Linux/macOS
+   venv\Scripts\activate            # Windows
+3. **Configuration des variables d'environnement**
+   ```bash
+   cp .env.example .env
+   ```
+4. **Éditez le fichier .env et ajoutez :**
+   ```bash
+   OPENAI_API_KEY=votre_cle_api_ici
+   MODEL_PATH=models/pneumonia_classifier_inference.pth
+   MCP_SERVER_PORT=8000
+   MAX_FILE_SIZE_MB=10
+   ```
+## Utilisation
+
+### Démarrage rapide
+```bash
+scripts\demarrer_systeme.bat # Windows
+scripts/demarrer_systeme.sh # Linux/macOS
+```
+
+### Démarrage manuel
+
+1. **Lancer le serveur de classification (Terminal 1) :**
+```bash
+python src/server/serveur_medical.py
+```
+
+2. **Lancer l'interface utilisateur (Terminal 2) :**
+```bash
 streamlit run src/interface/interface_medibot.py
-📁 Architecture du projet
-MediBot-Project/ 
-├── README.md 
-├── requirements.txt 
-├── .env.example 
-├── .gitignore 
-├── src/ 
-│   ├── __init__.py 
-│   ├── server/ 
-│   │   ├── __init__.py 
-│   │   └── serveur_medical.py 
-│   ├── chatbot/ 
-│   │   ├── __init__.py 
-│   │   └── assistant_medical.py 
-│   └── interface/ 
-│       ├── __init__.py 
-│       └── interface_medibot.py 
-├── models/ 
-│   └── pneumonia_classifier_inference.pth 
-├── scripts/ 
-│   ├── demarrer_systeme.bat 
-│   └── demarrer_systeme.sh 
-├── tests/ 
-│   └── __init__.py 
-└── assets/ 
-    └── images/ 
-        └── logo.png
-📄 License
-Ce projet est sous MIT License. Voir le fichier LICENSE pour plus d’informations.
-✨ Capture d’écran ()
-![Logo MediBot](assets/images/logo.png)
+```
+
+### Accéder aux interfaces :
+
+Interface utilisateur : http://localhost:8501
+API documentation : http://localhost:8000/docs
+
+## Architecture du projet
+
+```bash
+MediBot-Project/
+├── README.md
+├── requirements.txt
+├── .env.example
+├── .gitignore
+├── src/
+│   ├── __init__.py
+│   ├── server/
+│   │   ├── __init__.py
+│   │   └── serveur_medical.py
+│   ├── chatbot/
+│   │   ├── __init__.py
+│   │   └── assistant_medical.py
+│   └── interface/
+│       ├── __init__.py
+│       └── interface_medibot.py
+├── models/
+│   └── pneumonia_classifier_inference.pth
+├── scripts/
+│   ├── demarrer_systeme.bat
+│   └── demarrer_systeme.sh
+└── tests/
+    └── __init__.py
