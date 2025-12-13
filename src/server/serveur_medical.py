@@ -12,15 +12,15 @@ from datetime import datetime
 import logging
 
 # Configuration du logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
-# Ajouter le chemin source pour les imports
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-
 app = FastAPI(
-    title="MediBot MCP Server",
-    description="Model Context Protocol Server for Pneumonia Classification",
+    title="MediBot Classification Server",
+    description="Serveur de classification de pneumonie pour MediBot",
     version="1.0.0"
 )
 
@@ -40,10 +40,12 @@ class PneumoniaClassifier:
         self.model = self._load_model()
         self.transform = self._get_transforms()
         self.class_names = ['NORMAL', 'PNEUMONIA']
-        logger.info("Classificateur de pneumonie initialisé")
+        
+        device_name = "GPU" if torch.cuda.is_available() else "CPU"
+        logger.info(f"✅ Classificateur initialisé sur {device_name}")
 
     def _create_model_architecture(self):
-        """Crée l'architecture du modèle identique à l'entraînement"""
+        """Crée l'architecture du modèle (doit correspondre à l'entraînement)"""
         model = models.resnet50(pretrained=False)
         num_ftrs = model.fc.in_features
         model.fc = nn.Sequential(
@@ -64,10 +66,11 @@ class PneumoniaClassifier:
         """Charge le modèle entraîné"""
         try:
             if not os.path.exists(self.model_path):
-                logger.error(f"Fichier modèle non trouvé: {self.model_path}")
+                logger.error(f"❌ Fichier modèle non trouvé: {self.model_path}")
+                logger.info("💡 Vérifiez que le chemin du modèle est correct")
                 return None
             
-            logger.info(f"Chargement du modèle depuis: {self.model_path}")
+            logger.info(f"📂 Chargement du modèle depuis: {self.model_path}")
             model = self._create_model_architecture()
             
             # Charger les poids
@@ -83,15 +86,15 @@ class PneumoniaClassifier:
             
             model.eval()
             model.to(self.device)
-            logger.info("Modèle chargé avec succès")
+            logger.info("✅ Modèle chargé avec succès")
             return model
             
         except Exception as e:
-            logger.error(f"Erreur chargement modèle: {e}")
+            logger.error(f"❌ Erreur chargement modèle: {e}")
             return None
 
     def _get_transforms(self):
-        """Transformations identiques à l'entraînement"""
+        """Transformations d'image (identiques à l'entraînement)"""
         return transforms.Compose([
             transforms.Resize((224, 224)),
             transforms.ToTensor(),
@@ -99,15 +102,18 @@ class PneumoniaClassifier:
         ])
 
     def predict(self, image_bytes: bytes) -> dict:
-        """Prédit sur une image"""
+        """Effectue une prédiction sur une image"""
         try:
             if self.model is None:
-                return {"error": "Modèle non chargé", "status": "error"}
+                return {
+                    "error": "Modèle non chargé. Vérifiez le chemin du fichier modèle.",
+                    "status": "error"
+                }
 
-            # Conversion bytes → image
+            # Convertir bytes → image PIL
             image = Image.open(io.BytesIO(image_bytes)).convert('RGB')
             
-            # Transformation
+            # Appliquer les transformations
             image_tensor = self.transform(image).unsqueeze(0).to(self.device)
             
             # Prédiction
@@ -116,19 +122,26 @@ class PneumoniaClassifier:
                 probabilities = torch.nn.functional.softmax(outputs, dim=1)
                 confidence, prediction = torch.max(probabilities, 1)
             
-            return {
+            result = {
                 'prediction': self.class_names[prediction.item()],
-                'confidence': confidence.item(),
+                'confidence': float(confidence.item()),
                 'probabilities': {
-                    'NORMAL': probabilities[0][0].item(),
-                    'PNEUMONIA': probabilities[0][1].item()
+                    'NORMAL': float(probabilities[0][0].item()),
+                    'PNEUMONIA': float(probabilities[0][1].item())
                 },
-                'status': 'success'
+                'status': 'success',
+                'timestamp': datetime.now().isoformat()
             }
             
+            logger.info(f"✅ Prédiction: {result['prediction']} (confiance: {result['confidence']:.2%})")
+            return result
+            
         except Exception as e:
-            logger.error(f"Erreur prédiction: {e}")
-            return {'error': str(e), 'status': 'error'}
+            logger.error(f"❌ Erreur prédiction: {e}")
+            return {
+                'error': str(e),
+                'status': 'error'
+            }
 
 # Initialisation du classifieur
 model_path = os.getenv('MODEL_PATH', 'models/pneumonia_classifier_inference.pth')
@@ -136,116 +149,126 @@ classifier = PneumoniaClassifier(model_path)
 
 @app.get("/")
 async def root():
+    """Point d'entrée principal"""
     return {
-        "message": "MediBot MCP Server - Classification Pneumonie",
+        "service": "MediBot Classification Server",
         "status": "running",
         "model_loaded": classifier.model is not None,
-        "timestamp": datetime.now().isoformat()
+        "model_path": model_path,
+        "device": str(classifier.device),
+        "timestamp": datetime.now().isoformat(),
+        "endpoints": {
+            "health": "/health",
+            "predict": "/predict (POST)",
+            "model_info": "/model/info"
+        }
     }
 
 @app.get("/health")
 async def health_check():
+    """Vérification de l'état du serveur"""
     return {
-        "status": "healthy", 
+        "status": "healthy" if classifier.model is not None else "degraded",
         "model_loaded": classifier.model is not None,
+        "device": str(classifier.device),
         "timestamp": datetime.now().isoformat()
     }
 
 @app.post("/predict")
 async def predict_pneumonia(file: UploadFile = File(...)):
     """
-    Endpoint pour la classification de pneumonie
+    Endpoint de prédiction
+    
+    Args:
+        file: Image de radiographie (JPEG/PNG)
+        
+    Returns:
+        Résultat de classification avec probabilités
     """
     try:
-        logger.info("Début de la prédiction")
+        logger.info(f"📸 Nouvelle requête de prédiction - Fichier: {file.filename}")
         
         # Vérification du type de fichier
         if not file.content_type.startswith('image/'):
-            logger.error(f"Type de fichier non supporté: {file.content_type}")
-            raise HTTPException(status_code=400, detail="Le fichier doit être une image")
+            logger.warning(f"⚠️ Type de fichier invalide: {file.content_type}")
+            raise HTTPException(
+                status_code=400,
+                detail="Le fichier doit être une image (JPEG, PNG)"
+            )
         
-        # Vérification de la taille (max 10MB)
-        file.file.seek(0, 2)  # aller à la fin
+        # Vérification de la taille (max 10MB par défaut)
+        file.file.seek(0, 2)
         file_size = file.file.tell()
-        file.file.seek(0)  # revenir au début
+        file.file.seek(0)
         
         max_size = int(os.getenv('MAX_FILE_SIZE_MB', 10)) * 1024 * 1024
         if file_size > max_size:
-            logger.error(f"Fichier trop volumineux: {file_size} bytes")
-            raise HTTPException(status_code=400, detail=f"Fichier trop volumineux. Maximum: {max_size//(1024*1024)}MB")
+            logger.warning(f"⚠️ Fichier trop volumineux: {file_size} bytes")
+            raise HTTPException(
+                status_code=400,
+                detail=f"Fichier trop volumineux. Maximum: {max_size//(1024*1024)}MB"
+            )
         
         # Lecture de l'image
         image_bytes = await file.read()
-        logger.info(f"Image lue, taille: {len(image_bytes)} bytes")
-        
-        # Prédiction
-        logger.info("Appel du classifieur...")
-        result = classifier.predict(image_bytes)
-        logger.info(f"Résultat du classifieur: {result}")
-        
-        if result['status'] == 'error':
-            logger.error(f"Erreur du classifieur: {result['error']}")
-            raise HTTPException(status_code=500, detail=result['error'])
-        
-        logger.info(f"Prédiction effectuée: {result['prediction']} (confiance: {result['confidence']:.2f})")
-        
-        return result
-        
-    except HTTPException as http_exc:
-        logger.error(f"HTTPException: {http_exc.detail}")
-        raise http_exc
-    except Exception as e:
-        logger.error(f"Erreur inattendue lors du traitement: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Erreur lors du traitement: {str(e)}")
-    """
-    Endpoint pour la classification de pneumonie
-    """
-    try:
-        # Vérification du type de fichier
-        if not file.content_type.startswith('image/'):
-            raise HTTPException(status_code=400, detail="Le fichier doit être une image")
-        
-        # Vérification de la taille (max 10MB)
-        file.file.seek(0, 2)  # aller à la fin
-        file_size = file.file.tell()
-        file.file.seek(0)  # revenir au début
-        
-        max_size = int(os.getenv('MAX_FILE_SIZE_MB', 10)) * 1024 * 1024
-        if file_size > max_size:
-            raise HTTPException(status_code=400, detail=f"Fichier trop volumineux. Maximum: {max_size//(1024*1024)}MB")
-        
-        # Lecture de l'image
-        image_bytes = await file.read()
+        logger.info(f"✅ Image lue: {len(image_bytes)} bytes")
         
         # Prédiction
         result = classifier.predict(image_bytes)
         
         if result['status'] == 'error':
-            raise HTTPException(status_code=500, detail=result['error'])
+            logger.error(f"❌ Erreur classification: {result['error']}")
+            raise HTTPException(
+                status_code=500,
+                detail=result['error']
+            )
         
-        logger.info(f"Prédiction effectuée: {result['prediction']} (confiance: {result['confidence']:.2f})")
-        
+        logger.info(f"✅ Prédiction réussie: {result['prediction']}")
         return result
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Erreur traitement: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Erreur lors du traitement: {str(e)}")
+        logger.error(f"❌ Erreur inattendue: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Erreur lors du traitement: {str(e)}"
+        )
 
 @app.get("/model/info")
 async def model_info():
-    """Retourne les informations du modèle"""
+    """Informations sur le modèle"""
     return {
         "model_name": "ResNet50 Pneumonia Classifier",
-        "input_size": "224x224",
+        "architecture": "ResNet50 avec couche FC personnalisée",
+        "input_size": "224x224 RGB",
         "classes": classifier.class_names,
-        "description": "Modèle de classification de pneumonie basé sur ResNet50",
+        "num_classes": len(classifier.class_names),
         "model_loaded": classifier.model is not None,
-        "device": str(classifier.device)
+        "device": str(classifier.device),
+        "model_path": model_path
     }
+
+@app.on_event("startup")
+async def startup_event():
+    """Actions au démarrage du serveur"""
+    logger.info("=" * 50)
+    logger.info("🚀 Démarrage du serveur MediBot")
+    logger.info("=" * 50)
+    if classifier.model is not None:
+        logger.info("✅ Serveur prêt à recevoir des requêtes")
+    else:
+        logger.warning("⚠️ ATTENTION: Modèle non chargé!")
+        logger.info(f"💡 Vérifiez le chemin: {model_path}")
 
 if __name__ == "__main__":
     port = int(os.getenv("MCP_SERVER_PORT", 8000))
-    logger.info(f"🚀 Démarrage du serveur MCP sur le port {port}")
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    logger.info(f"🌐 Lancement du serveur sur http://localhost:{port}")
+    logger.info(f"📖 Documentation disponible sur http://localhost:{port}/docs")
+    
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=port,
+        log_level="info"
+    )
