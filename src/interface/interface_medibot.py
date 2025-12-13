@@ -168,7 +168,7 @@ class InterfaceMediBot:
                 try:
                     # Afficher l'image
                     image = Image.open(uploaded_file)
-                    st.image(image, caption="Radiographie téléchargée", use_column_width=True)
+                    st.image(image, caption="Radiographie téléchargée", use_container_width=True)
                     
                     # Stocker l'image dans la session
                     img_bytes = io.BytesIO()

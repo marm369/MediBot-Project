@@ -131,7 +131,7 @@ class PneumoniaClassifier:
             return {'error': str(e), 'status': 'error'}
 
 # Initialisation du classifieur
-model_path = os.getenv('MODEL_PATH', 'models/pneumonia_classifier_inference_20251115_163236.pth')
+model_path = os.getenv('MODEL_PATH', 'models/pneumonia_classifier_inference.pth')
 classifier = PneumoniaClassifier(model_path)
 
 @app.get("/")
@@ -153,6 +153,50 @@ async def health_check():
 
 @app.post("/predict")
 async def predict_pneumonia(file: UploadFile = File(...)):
+    """
+    Endpoint pour la classification de pneumonie
+    """
+    try:
+        logger.info("Début de la prédiction")
+        
+        # Vérification du type de fichier
+        if not file.content_type.startswith('image/'):
+            logger.error(f"Type de fichier non supporté: {file.content_type}")
+            raise HTTPException(status_code=400, detail="Le fichier doit être une image")
+        
+        # Vérification de la taille (max 10MB)
+        file.file.seek(0, 2)  # aller à la fin
+        file_size = file.file.tell()
+        file.file.seek(0)  # revenir au début
+        
+        max_size = int(os.getenv('MAX_FILE_SIZE_MB', 10)) * 1024 * 1024
+        if file_size > max_size:
+            logger.error(f"Fichier trop volumineux: {file_size} bytes")
+            raise HTTPException(status_code=400, detail=f"Fichier trop volumineux. Maximum: {max_size//(1024*1024)}MB")
+        
+        # Lecture de l'image
+        image_bytes = await file.read()
+        logger.info(f"Image lue, taille: {len(image_bytes)} bytes")
+        
+        # Prédiction
+        logger.info("Appel du classifieur...")
+        result = classifier.predict(image_bytes)
+        logger.info(f"Résultat du classifieur: {result}")
+        
+        if result['status'] == 'error':
+            logger.error(f"Erreur du classifieur: {result['error']}")
+            raise HTTPException(status_code=500, detail=result['error'])
+        
+        logger.info(f"Prédiction effectuée: {result['prediction']} (confiance: {result['confidence']:.2f})")
+        
+        return result
+        
+    except HTTPException as http_exc:
+        logger.error(f"HTTPException: {http_exc.detail}")
+        raise http_exc
+    except Exception as e:
+        logger.error(f"Erreur inattendue lors du traitement: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Erreur lors du traitement: {str(e)}")
     """
     Endpoint pour la classification de pneumonie
     """
