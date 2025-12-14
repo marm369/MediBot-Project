@@ -51,7 +51,7 @@
    ```
 4. **Éditez le fichier .env et ajoutez :**
    ```bash
-   OPENAI_API_KEY=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
+   OPENAI_API_KEY="Vous trouverez la clé OpenAI API dans le rapport de projet"
    MODEL_PATH=models/pneumonia_classifier_inference.pth
    MCP_SERVER_PORT=8000
    MAX_FILE_SIZE_MB=10
