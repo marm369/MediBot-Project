@@ -1,7 +1,7 @@
 """
-MediBot - Système médical intelligent pour la classification de pneumonie
+MediBot - Assistant Médical IA
+Package principal
 """
 
-_version_ = "1.0.0"
-_author_ = "SSDM"
-_description_ = "Système de diagnostic assisté par IA pour la pneumonie"
+__version__ = "1.0.0"
+__author__ = "MediBot Team"
