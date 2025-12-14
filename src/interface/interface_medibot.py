@@ -45,418 +45,6 @@ class InterfaceMediBot:
             initial_sidebar_state="expanded"
         )
 
-        # CSS Moderne corrigé
-        st.markdown("""
-        <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        
-        /* ========== GLOBAL ========== */
-        * {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        
-        /* ========== MODE CLAIR (par défaut) ========== */
-        .stApp {
-            background: #f6f7f8;
-            color: #111418;
-        }
-        
-        /* ========== MODE SOMBRE ========== */
-        .stApp[data-theme="dark"] {
-            background: #101922;
-            color: #ffffff;
-        }
-        
-        /* ========== SCROLLBAR ========== */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-        
-        .stApp[data-theme="dark"] ::-webkit-scrollbar-thumb {
-            background: #334155;
-        }
-        
-        /* ========== HEADER AMÉLIORÉ ========== */
-        .modern-header {
-            background: linear-gradient(135deg, #2b8cee 0%, #1e40af 100%);
-            padding: 2rem 1.5rem;
-            border-radius: 16px;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 4px 20px rgba(43, 140, 238, 0.25);
-        }
-        
-        .header-title {
-            font-size: 2rem;
-            font-weight: 700;
-            color: white;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        
-        .header-subtitle {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.9);
-            margin-top: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            background: #10b981;
-            border-radius: 50%;
-            display: inline-block;
-            animation: pulse 2s infinite;
-            box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(0.95); }
-        }
-        
-        /* ========== DISCLAIMER ========== */
-        .disclaimer {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border-left: 4px solid #f59e0b;
-            border-radius: 12px;
-            padding: 1rem 1.25rem;
-            margin: 1.5rem 0;
-            display: flex;
-            align-items: start;
-            gap: 1rem;
-            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
-        }
-        
-        .stApp[data-theme="dark"] .disclaimer {
-            background: rgba(245, 158, 11, 0.15);
-            border-color: #f59e0b;
-        }
-        
-        .disclaimer-icon {
-            font-size: 1.5rem;
-            flex-shrink: 0;
-        }
-        
-        .disclaimer-text {
-            font-size: 0.85rem;
-            color: #78350f;
-            line-height: 1.6;
-        }
-        
-        .stApp[data-theme="dark"] .disclaimer-text {
-            color: #fde68a;
-        }
-        
-        /* ========== MESSAGES CHAT ========== */
-        .chat-container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 1rem 0 2rem 0;
-        }
-        
-        .message-wrapper {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            animation: slideIn 0.4s ease-out;
-        }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(15px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .message-wrapper.user {
-            flex-direction: row-reverse;
-        }
-        
-        .avatar {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-            flex-shrink: 0;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        }
-        
-        .avatar.bot {
-            background: linear-gradient(135deg, #2b8cee 0%, #1e40af 100%);
-        }
-        
-        .avatar.user {
-            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
-        }
-        
-        .message-content {
-            flex: 1;
-            max-width: 75%;
-        }
-        
-        .message-header {
-            display: flex;
-            align-items: baseline;
-            gap: 0.5rem;
-            margin-bottom: 0.4rem;
-        }
-        
-        .message-wrapper.user .message-header {
-            flex-direction: row-reverse;
-        }
-        
-        .message-author {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #111418;
-        }
-        
-        .stApp[data-theme="dark"] .message-author {
-            color: #ffffff;
-        }
-        
-        .message-time {
-            font-size: 0.7rem;
-            color: #617589;
-        }
-        
-        .stApp[data-theme="dark"] .message-time {
-            color: #9dabb9;
-        }
-        
-        .message-bubble {
-            padding: 1rem 1.25rem;
-            border-radius: 18px;
-            font-size: 0.95rem;
-            line-height: 1.65;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            word-wrap: break-word;
-            white-space: pre-wrap;
-        }
-        
-        .message-bubble.bot {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-top-left-radius: 4px;
-            color: #111418;
-        }
-        
-        .stApp[data-theme="dark"] .message-bubble.bot {
-            background: #1a2632;
-            border-color: #283039;
-            color: #ffffff;
-        }
-        
-        .message-bubble.user {
-            background: linear-gradient(135deg, #2b8cee 0%, #1e40af 100%);
-            border-top-right-radius: 4px;
-            color: white;
-            border: none;
-        }
-        
-        .image-preview {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 0.5rem 0.75rem;
-            border-radius: 8px;
-            margin-top: 0.75rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.85rem;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        
-        /* ========== QUICK BUTTONS MODERNES ========== */
-        .quick-actions-title {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #617589;
-            margin-bottom: 0.75rem;
-        }
-        
-        .stApp[data-theme="dark"] .quick-actions-title {
-            color: #9dabb9;
-        }
-        
-        div[data-testid="column"] button {
-            background: white !important;
-            color: #111418 !important;
-            border: 1px solid #e5e7eb !important;
-            border-radius: 24px !important;
-            font-size: 0.85rem !important;
-            font-weight: 500 !important;
-            padding: 0.6rem 1.2rem !important;
-            transition: all 0.2s ease !important;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
-            width: 100% !important;
-        }
-        
-        .stApp[data-theme="dark"] div[data-testid="column"] button {
-            background: #1a2632 !important;
-            color: #ffffff !important;
-            border-color: #283039 !important;
-        }
-        
-        div[data-testid="column"] button:hover {
-            background: linear-gradient(135deg, #2b8cee 0%, #1e40af 100%) !important;
-            color: white !important;
-            border-color: transparent !important;
-            transform: translateY(-2px) !important;
-            box-shadow: 0 4px 12px rgba(43, 140, 238, 0.3) !important;
-        }
-        
-        /* ========== IMAGE BADGE ========== */
-        .image-badge {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            padding: 0.6rem 1.2rem;
-            border-radius: 24px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
-        }
-        
-        /* ========== INPUT & SEND BUTTON ========== */
-        .stTextArea textarea {
-            background: white !important;
-            border: 2px solid #e5e7eb !important;
-            border-radius: 14px !important;
-            color: #111418 !important;
-            font-size: 0.95rem !important;
-            transition: all 0.2s !important;
-            padding: 0.75rem !important;
-        }
-        
-        .stApp[data-theme="dark"] .stTextArea textarea {
-            background: #1a2632 !important;
-            border-color: #283039 !important;
-            color: #ffffff !important;
-        }
-        
-        .stTextArea textarea:focus {
-            border-color: #2b8cee !important;
-            box-shadow: 0 0 0 3px rgba(43, 140, 238, 0.1) !important;
-        }
-        
-        /* Bouton Envoyer principal */
-        button[kind="primary"] {
-            background: linear-gradient(135deg, #2b8cee 0%, #1e40af 100%) !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 12px !important;
-            font-weight: 600 !important;
-            font-size: 0.95rem !important;
-            padding: 0.75rem 2rem !important;
-            transition: all 0.2s !important;
-            box-shadow: 0 4px 12px rgba(43, 140, 238, 0.3) !important;
-        }
-        
-        button[kind="primary"]:hover {
-            transform: translateY(-2px) !important;
-            box-shadow: 0 6px 20px rgba(43, 140, 238, 0.4) !important;
-        }
-        
-        /* Bouton Retirer */
-        button[key="remove_img"] {
-            background: #ef4444 !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 10px !important;
-            font-size: 0.85rem !important;
-            padding: 0.5rem 1rem !important;
-        }
-        
-        button[key="remove_img"]:hover {
-            background: #dc2626 !important;
-        }
-        
-        /* ========== SIDEBAR ========== */
-        section[data-testid="stSidebar"] {
-            background: #ffffff !important;
-            border-right: 1px solid #e5e7eb !important;
-        }
-        
-        .stApp[data-theme="dark"] section[data-testid="stSidebar"] {
-            background: #111418 !important;
-            border-right-color: #283039 !important;
-        }
-        
-        section[data-testid="stSidebar"] h1, 
-        section[data-testid="stSidebar"] h2, 
-        section[data-testid="stSidebar"] h3 {
-            color: #111418;
-        }
-        
-        .stApp[data-theme="dark"] section[data-testid="stSidebar"] h1,
-        .stApp[data-theme="dark"] section[data-testid="stSidebar"] h2,
-        .stApp[data-theme="dark"] section[data-testid="stSidebar"] h3 {
-            color: #ffffff;
-        }
-        
-        /* Toggle theme button */
-        button[key="theme_toggle"] {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 10px !important;
-            padding: 0.5rem 0.75rem !important;
-            font-size: 1.2rem !important;
-        }
-        
-        /* ========== EXPANDER ========== */
-        .streamlit-expanderHeader {
-            background: #f9fafb !important;
-            border: 1px solid #e5e7eb !important;
-            border-radius: 10px !important;
-            font-weight: 500 !important;
-        }
-        
-        .stApp[data-theme="dark"] .streamlit-expanderHeader {
-            background: #1a2632 !important;
-            border-color: #283039 !important;
-            color: #ffffff !important;
-        }
-        
-        /* ========== RESPONSIVE ========== */
-        @media (max-width: 768px) {
-            .message-content {
-                max-width: 85%;
-            }
-            .header-title {
-                font-size: 1.5rem;
-            }
-        }
-        </style>
-        """, unsafe_allow_html=True)
-
     def _initialiser_session(self):
         """Initialise les variables de session"""
         if "messages" not in st.session_state:
@@ -469,11 +57,372 @@ class InterfaceMediBot:
             st.session_state.conversation_history = []
         if "dark_mode" not in st.session_state:
             st.session_state.dark_mode = False
+        if "theme_initialized" not in st.session_state:
+            st.session_state.theme_initialized = False
 
     def _initialiser_assistant(self):
         """Initialise l'assistant médical GPT"""
         if "assistant" not in st.session_state:
             st.session_state.assistant = AssistantMedicalGPT()
+
+    def _appliquer_css(self):
+        """Applique le CSS dynamiquement selon le thème"""
+        theme = "dark" if st.session_state.dark_mode else "light"
+        
+        css = f"""
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        /* ========== GLOBAL ========== */
+        * {{
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }}
+        
+        /* ========== THÈME DYNAMIQUE ========== */
+        .stApp {{
+            background: {"#101922" if theme == "dark" else "#f6f7f8"} !important;
+            color: {"#ffffff" if theme == "dark" else "#111418"} !important;
+            transition: background 0.3s ease, color 0.3s ease;
+        }}
+        
+        /* ========== SCROLLBAR ========== */
+        ::-webkit-scrollbar {{
+            width: 8px;
+        }}
+        
+        ::-webkit-scrollbar-track {{
+            background: transparent;
+        }}
+        
+        ::-webkit-scrollbar-thumb {{
+            background: {"#334155" if theme == "dark" else "#cbd5e1"};
+            border-radius: 4px;
+        }}
+        
+        ::-webkit-scrollbar-thumb:hover {{
+            background: {"#475569" if theme == "dark" else "#94a3b8"};
+        }}
+        
+        /* ========== HEADER AMÉLIORÉ ========== */
+        .modern-header {{
+            background: linear-gradient(135deg, #2b8cee 0%, #1e40af 100%);
+            padding: 2rem 1.5rem;
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 20px rgba(43, 140, 238, 0.25);
+        }}
+        
+        .header-title {{
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }}
+        
+        .header-subtitle {{
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }}
+        
+        .status-dot {{
+            width: 10px;
+            height: 10px;
+            background: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+        }}
+        
+        @keyframes pulse {{
+            0%, 100% {{ opacity: 1; transform: scale(1); }}
+            50% {{ opacity: 0.7; transform: scale(0.95); }}
+        }}
+        
+        /* ========== DISCLAIMER ========== */
+        .disclaimer {{
+            background: {"rgba(245, 158, 11, 0.15)" if theme == "dark" else "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)"};
+            border-left: 4px solid #f59e0b;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin: 1.5rem 0;
+            display: flex;
+            align-items: start;
+            gap: 1rem;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+        }}
+        
+        .disclaimer-icon {{
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }}
+        
+        .disclaimer-text {{
+            font-size: 0.85rem;
+            color: {"#fde68a" if theme == "dark" else "#78350f"};
+            line-height: 1.6;
+        }}
+        
+        /* ========== MESSAGES CHAT ========== */
+        .chat-container {{
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 1rem 0 2rem 0;
+        }}
+        
+        .message-wrapper {{
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            animation: slideIn 0.4s ease-out;
+        }}
+        
+        @keyframes slideIn {{
+            from {{
+                opacity: 0;
+                transform: translateY(15px);
+            }}
+            to {{
+                opacity: 1;
+                transform: translateY(0);
+            }}
+        }}
+        
+        .message-wrapper.user {{
+            flex-direction: row-reverse;
+        }}
+        
+        .avatar {{
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }}
+        
+        .avatar.bot {{
+            background: linear-gradient(135deg, #2b8cee 0%, #1e40af 100%);
+        }}
+        
+        .avatar.user {{
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+        }}
+        
+        .message-content {{
+            flex: 1;
+            max-width: 75%;
+        }}
+        
+        .message-header {{
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin-bottom: 0.4rem;
+        }}
+        
+        .message-wrapper.user .message-header {{
+            flex-direction: row-reverse;
+        }}
+        
+        .message-author {{
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: {"#ffffff" if theme == "dark" else "#111418"};
+        }}
+        
+        .message-time {{
+            font-size: 0.7rem;
+            color: {"#9dabb9" if theme == "dark" else "#617589"};
+        }}
+        
+        .message-bubble {{
+            padding: 1rem 1.25rem;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.65;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }}
+        
+        .message-bubble.bot {{
+            background: {"#1a2632" if theme == "dark" else "#ffffff"};
+            border: 1px solid {"#283039" if theme == "dark" else "#e5e7eb"};
+            border-top-left-radius: 4px;
+            color: {"#ffffff" if theme == "dark" else "#111418"};
+        }}
+        
+        .message-bubble.user {{
+            background: linear-gradient(135deg, #2b8cee 0%, #1e40af 100%);
+            border-top-right-radius: 4px;
+            color: white;
+            border: none;
+        }}
+        
+        .image-preview {{
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            margin-top: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }}
+        
+        /* ========== QUICK BUTTONS ========== */
+        .quick-actions-title {{
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: {"#9dabb9" if theme == "dark" else "#617589"};
+            margin-bottom: 0.75rem;
+        }}
+        
+        div[data-testid="column"] button {{
+            background: {"#1a2632" if theme == "dark" else "white"} !important;
+            color: {"#ffffff" if theme == "dark" else "#111418"} !important;
+            border: 1px solid {"#283039" if theme == "dark" else "#e5e7eb"} !important;
+            border-radius: 24px !important;
+            font-size: 0.85rem !important;
+            font-weight: 500 !important;
+            padding: 0.6rem 1.2rem !important;
+            transition: all 0.2s ease !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+            width: 100% !important;
+        }}
+        
+        div[data-testid="column"] button:hover {{
+            background: linear-gradient(135deg, #2b8cee 0%, #1e40af 100%) !important;
+            color: white !important;
+            border-color: transparent !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(43, 140, 238, 0.3) !important;
+        }}
+        
+        /* ========== IMAGE BADGE ========== */
+        .image-badge {{
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 24px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }}
+        
+        /* ========== INPUT & SEND BUTTON ========== */
+        .stTextArea textarea {{
+            background: {"#1a2632" if theme == "dark" else "white"} !important;
+            border: 2px solid {"#283039" if theme == "dark" else "#e5e7eb"} !important;
+            border-radius: 14px !important;
+            color: {"#ffffff" if theme == "dark" else "#111418"} !important;
+            font-size: 0.95rem !important;
+            transition: all 0.2s !important;
+            padding: 0.75rem !important;
+        }}
+        
+        .stTextArea textarea:focus {{
+            border-color: #2b8cee !important;
+            box-shadow: 0 0 0 3px rgba(43, 140, 238, 0.1) !important;
+        }}
+        
+        /* Bouton Envoyer principal */
+        button[kind="primary"] {{
+            background: linear-gradient(135deg, #2b8cee 0%, #1e40af 100%) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 12px !important;
+            font-weight: 600 !important;
+            font-size: 0.95rem !important;
+            padding: 0.75rem 2rem !important;
+            transition: all 0.2s !important;
+            box-shadow: 0 4px 12px rgba(43, 140, 238, 0.3) !important;
+        }}
+        
+        button[kind="primary"]:hover {{
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(43, 140, 238, 0.4) !important;
+        }}
+        
+        /* Bouton Retirer */
+        button[key="remove_img"] {{
+            background: #ef4444 !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 10px !important;
+            font-size: 0.85rem !important;
+            padding: 0.5rem 1rem !important;
+        }}
+        
+        button[key="remove_img"]:hover {{
+            background: #dc2626 !important;
+        }}
+        
+        /* ========== SIDEBAR ========== */
+        section[data-testid="stSidebar"] {{
+            background: {"#111418" if theme == "dark" else "#ffffff"} !important;
+            border-right: 1px solid {"#283039" if theme == "dark" else "#e5e7eb"} !important;
+        }}
+        
+        section[data-testid="stSidebar"] h1, 
+        section[data-testid="stSidebar"] h2, 
+        section[data-testid="stSidebar"] h3 {{
+            color: {"#ffffff" if theme == "dark" else "#111418"};
+        }}
+        
+        /* Toggle theme button */
+        .theme-toggle-btn {{
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 10px !important;
+            padding: 0.5rem 0.75rem !important;
+            font-size: 1.2rem !important;
+            transition: transform 0.2s !important;
+        }}
+        
+        .theme-toggle-btn:hover {{
+            transform: scale(1.05) !important;
+        }}
+        
+        /* ========== EXPANDER ========== */
+        .streamlit-expanderHeader {{
+            background: {"#1a2632" if theme == "dark" else "#f9fafb"} !important;
+            border: 1px solid {"#283039" if theme == "dark" else "#e5e7eb"} !important;
+            border-radius: 10px !important;
+            font-weight: 500 !important;
+            color: {"#ffffff" if theme == "dark" else "inherit"} !important;
+        }}
+        
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 768px) {{
+            .message-content {{
+                max-width: 85%;
+            }}
+            .header-title {{
+                font-size: 1.5rem;
+            }}
+        }}
+        </style>
+        """
+        
+        st.markdown(css, unsafe_allow_html=True)
+        st.session_state.theme_initialized = True
 
     def _nettoyer_reponse(self, texte: str) -> str:
         """Nettoie la réponse de l'IA en supprimant les avertissements dupliqués et le HTML"""
@@ -500,18 +449,9 @@ class InterfaceMediBot:
 
     def afficher_entete(self):
         """Affiche l'en-tête de l'application"""
-        # Appliquer le thème
-        theme = 'dark' if st.session_state.dark_mode else 'light'
-        st.markdown(f"""
-        <script>
-        const app = document.querySelector('.stApp');
-        if (app) {{
-            app.setAttribute('data-theme', '{theme}');
-        }}
-        </script>
-        """, unsafe_allow_html=True)
+        theme = "🌙 Mode sombre" if st.session_state.dark_mode else "☀️ Mode clair"
         
-        st.markdown("""
+        st.markdown(f"""
         <div class="modern-header">
             <div class="header-title">
                 🫁 PneumoScan AI
@@ -519,6 +459,7 @@ class InterfaceMediBot:
             <div class="header-subtitle">
                 <span class="status-dot"></span>
                 Assistant Médical Intelligent · Analyse de Pneumonie
+                <span style="margin-left: auto; font-size: 0.8rem; opacity: 0.8;">{theme}</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -544,13 +485,20 @@ class InterfaceMediBot:
             with col1:
                 st.markdown("### 🔧 Paramètres")
             with col2:
-                theme_icon = "🌙" if st.session_state.dark_mode else "☀️"
-                if st.button(theme_icon, key="theme_toggle", help="Changer le thème"):
+                # Utiliser un bouton custom avec CSS
+                theme_label = "🌙" if not st.session_state.dark_mode else "☀️"
+                theme_help = "Passer en mode clair" if st.session_state.dark_mode else "Passer en mode sombre"
+                
+                if st.button(theme_label, key="theme_toggle", help=theme_help):
                     st.session_state.dark_mode = not st.session_state.dark_mode
                     st.rerun()
             
             st.markdown("---")
             st.markdown("### 📊 État du Système")
+            
+            # Afficher le thème actuel
+            theme_status = "🌙 Activé" if st.session_state.dark_mode else "☀️ Activé"
+            st.info(f"**Thème:** {theme_status}")
             
             # Vérifier GPT-4
             if st.session_state.assistant.use_gpt4:
@@ -965,7 +913,10 @@ Détails techniques : {str(e)[:100]}
 
     def lancer_interface(self):
         """Lance l'interface principale"""
-        # Afficher l'en-tête avec le thème appliqué
+        # Appliquer le CSS selon le thème
+        self._appliquer_css()
+        
+        # Afficher l'en-tête
         self.afficher_entete()
         
         # Afficher l'avertissement médical
