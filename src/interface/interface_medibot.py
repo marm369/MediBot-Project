@@ -7,7 +7,6 @@ import logging
 import requests
 import re
 
-# Ajouter le chemin pour importer assistant_medical depuis le dossier chatbot
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 chatbot_dir = os.path.join(parent_dir, 'chatbot')
@@ -295,23 +294,19 @@ class InterfaceMediBot:
             margin-bottom: 0.75rem;
         }}
         
-            /* Les boutons rapides */
+        /* Les boutons rapides */
         div[data-testid="column"] button {{
-        background: {"#1e293b" if theme == "dark" else "white"} !important;
-        border: 1px solid {"#334155" if theme == "dark" else "#e2e8f0"} !important;
-        border-radius: 24px !important;
-        padding: 0.6rem 1.2rem !important;
-        transition: all 0.2s ease !important;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, {"0.2" if theme == "dark" else "0.08"}) !important;
-        width: 100% !important;
-    }}
-
-    div[data-testid="column"] button span {{
-        color: {"#00FF00" if theme == "dark" else "#0f172a"} !important;
-        font-size: 0.85rem !important;
-        font-weight: 500 !important;
-    }}
-
+            background: {"#1e293b" if theme == "dark" else "white"} !important;
+            color: {"#484a4d" if theme == "dark" else "#0f172a"} !important;
+            border: 1px solid {"#334155" if theme == "dark" else "#e2e8f0"} !important;
+            border-radius: 24px !important;
+            font-size: 0.85rem !important;
+            font-weight: 500 !important;
+            padding: 0.6rem 1.2rem !important;
+            transition: all 0.2s ease !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, {"0.2" if theme == "dark" else "0.08"}) !important;
+            width: 100% !important;
+        }}
         
         div[data-testid="column"] button:hover {{
             background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%) !important;
@@ -552,7 +547,7 @@ class InterfaceMediBot:
             # Toggle mode sombre/clair
             col1, col2 = st.columns([3, 1])
             with col1:
-                st.markdown("### ⚙️ Paramètres")
+                st.markdown("### Paramètres")
             with col2:
                 theme_icon = "🌙" if not st.session_state.dark_mode else "☀️"
                 theme_help = "Passer en mode clair" if st.session_state.dark_mode else "Passer en mode sombre"
@@ -772,7 +767,7 @@ class InterfaceMediBot:
         
         col1, col2 = st.columns([4, 1])
         with col1:
-            send = st.button("📤 Envoyer", type="primary", use_container_width=True)
+            send = st.button("Envoyer", type="primary", use_container_width=True)
         
         if send and user_input.strip():
             self._traiter_message(user_input)
@@ -1017,7 +1012,7 @@ def main():
     """Fonction principale"""
     try:
         st.info("""
-        🚀 **PneumoScan AI** - Démarrage...
+        **PneumoScan AI** - Démarrage...
         Vérification de la configuration système.
         """)
         
