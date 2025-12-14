@@ -5,6 +5,7 @@ from PIL import Image
 import io
 import logging
 import requests
+import re
 
 # Ajouter le chemin pour importer assistant_medical depuis le dossier chatbot
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -44,53 +45,31 @@ class InterfaceMediBot:
             initial_sidebar_state="expanded"
         )
 
-        # CSS Moderne inspiré des designs médicaux professionnels
+        # CSS Moderne corrigé
         st.markdown("""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        
-        /* ========== VARIABLES ========== */
-        :root {
-            --primary: #2b8cee;
-            --primary-hover: #2374cc;
-            --bg-light: #f6f7f8;
-            --bg-dark: #101922;
-            --surface-light: #ffffff;
-            --surface-dark: #1a2632;
-            --text-light: #111418;
-            --text-dark: #ffffff;
-            --text-secondary-light: #617589;
-            --text-secondary-dark: #9dabb9;
-            --border-light: #f0f2f4;
-            --border-dark: #283039;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --error: #ef4444;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.15);
-            --shadow-lg: 0 8px 24px rgba(0,0,0,0.2);
-        }
         
         /* ========== GLOBAL ========== */
         * {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
         
+        /* ========== MODE CLAIR (par défaut) ========== */
         .stApp {
-            background: var(--bg-light);
-            color: var(--text-light);
+            background: #f6f7f8;
+            color: #111418;
         }
         
-        /* Mode sombre */
-        [data-theme="dark"] .stApp {
-            background: var(--bg-dark);
-            color: var(--text-dark);
+        /* ========== MODE SOMBRE ========== */
+        .stApp[data-theme="dark"] {
+            background: #101922;
+            color: #ffffff;
         }
         
         /* ========== SCROLLBAR ========== */
         ::-webkit-scrollbar {
             width: 8px;
-            height: 8px;
         }
         
         ::-webkit-scrollbar-track {
@@ -106,100 +85,83 @@ class InterfaceMediBot:
             background: #94a3b8;
         }
         
-        [data-theme="dark"] ::-webkit-scrollbar-thumb {
+        .stApp[data-theme="dark"] ::-webkit-scrollbar-thumb {
             background: #334155;
         }
         
-        /* ========== HEADER ========== */
-        .main-header {
-            text-align: left;
-            padding: 1.5rem 0;
-            border-bottom: 1px solid var(--border-light);
-            margin-bottom: 1rem;
-            background: var(--surface-light);
-        }
-        
-        [data-theme="dark"] .main-header {
-            border-color: var(--border-dark);
-            background: var(--surface-dark);
+        /* ========== HEADER AMÉLIORÉ ========== */
+        .modern-header {
+            background: linear-gradient(135deg, #2b8cee 0%, #1e40af 100%);
+            padding: 2rem 1.5rem;
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 20px rgba(43, 140, 238, 0.25);
         }
         
         .header-title {
-            font-size: 1.75rem;
+            font-size: 2rem;
             font-weight: 700;
-            color: var(--text-light);
+            color: white;
+            margin: 0;
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            margin: 0;
-        }
-        
-        [data-theme="dark"] .header-title {
-            color: var(--text-dark);
         }
         
         .header-subtitle {
-            font-size: 0.75rem;
-            color: var(--text-secondary-light);
-            margin-top: 0.25rem;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 0.5rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
         
-        [data-theme="dark"] .header-subtitle {
-            color: var(--text-secondary-dark);
-        }
-        
         .status-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--success);
+            width: 10px;
+            height: 10px;
+            background: #10b981;
             border-radius: 50%;
             display: inline-block;
             animation: pulse 2s infinite;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
         }
         
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(0.95); }
         }
         
         /* ========== DISCLAIMER ========== */
         .disclaimer {
             background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border-left: 3px solid var(--warning);
-            border-radius: 8px;
-            padding: 0.875rem 1rem;
-            margin: 1rem 0;
+            border-left: 4px solid #f59e0b;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin: 1.5rem 0;
             display: flex;
             align-items: start;
-            gap: 0.75rem;
-            box-shadow: var(--shadow-sm);
+            gap: 1rem;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
         }
         
-        [data-theme="dark"] .disclaimer {
+        .stApp[data-theme="dark"] .disclaimer {
             background: rgba(245, 158, 11, 0.15);
-            border-color: var(--warning);
+            border-color: #f59e0b;
         }
         
         .disclaimer-icon {
-            color: #92400e;
-            font-size: 1.25rem;
+            font-size: 1.5rem;
             flex-shrink: 0;
         }
         
-        [data-theme="dark"] .disclaimer-icon {
-            color: var(--warning);
-        }
-        
         .disclaimer-text {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             color: #78350f;
-            line-height: 1.5;
+            line-height: 1.6;
         }
         
-        [data-theme="dark"] .disclaimer-text {
+        .stApp[data-theme="dark"] .disclaimer-text {
             color: #fde68a;
         }
         
@@ -207,20 +169,20 @@ class InterfaceMediBot:
         .chat-container {
             max-width: 900px;
             margin: 0 auto;
-            padding: 1rem 0;
+            padding: 1rem 0 2rem 0;
         }
         
         .message-wrapper {
             display: flex;
             gap: 1rem;
             margin-bottom: 1.5rem;
-            animation: slideIn 0.3s ease-out;
+            animation: slideIn 0.4s ease-out;
         }
         
         @keyframes slideIn {
             from {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(15px);
             }
             to {
                 opacity: 1;
@@ -233,25 +195,23 @@ class InterfaceMediBot:
         }
         
         .avatar {
-            width: 40px;
-            height: 40px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.25rem;
+            font-size: 1.3rem;
             flex-shrink: 0;
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
         
         .avatar.bot {
-            background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%);
-            color: white;
+            background: linear-gradient(135deg, #2b8cee 0%, #1e40af 100%);
         }
         
         .avatar.user {
-            background: #64748b;
-            color: white;
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
         }
         
         .message-content {
@@ -263,7 +223,7 @@ class InterfaceMediBot:
             display: flex;
             align-items: baseline;
             gap: 0.5rem;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.4rem;
         }
         
         .message-wrapper.user .message-header {
@@ -271,223 +231,218 @@ class InterfaceMediBot:
         }
         
         .message-author {
-            font-size: 0.875rem;
+            font-size: 0.9rem;
             font-weight: 600;
-            color: var(--text-light);
+            color: #111418;
         }
         
-        [data-theme="dark"] .message-author {
-            color: var(--text-dark);
+        .stApp[data-theme="dark"] .message-author {
+            color: #ffffff;
         }
         
         .message-time {
-            font-size: 0.65rem;
-            color: var(--text-secondary-light);
+            font-size: 0.7rem;
+            color: #617589;
         }
         
-        [data-theme="dark"] .message-time {
-            color: var(--text-secondary-dark);
+        .stApp[data-theme="dark"] .message-time {
+            color: #9dabb9;
         }
         
         .message-bubble {
             padding: 1rem 1.25rem;
-            border-radius: 16px;
-            font-size: 0.9rem;
-            line-height: 1.6;
-            box-shadow: var(--shadow-sm);
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.65;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             word-wrap: break-word;
+            white-space: pre-wrap;
         }
         
         .message-bubble.bot {
-            background: var(--surface-light);
-            border: 1px solid var(--border-light);
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
             border-top-left-radius: 4px;
-            color: var(--text-light);
+            color: #111418;
         }
         
-        [data-theme="dark"] .message-bubble.bot {
-            background: var(--surface-dark);
-            border-color: var(--border-dark);
-            color: var(--text-dark);
+        .stApp[data-theme="dark"] .message-bubble.bot {
+            background: #1a2632;
+            border-color: #283039;
+            color: #ffffff;
         }
         
         .message-bubble.user {
-            background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%);
+            background: linear-gradient(135deg, #2b8cee 0%, #1e40af 100%);
             border-top-right-radius: 4px;
             color: white;
+            border: none;
         }
         
         .image-preview {
-            background: rgba(0,0,0,0.05);
-            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 0.75rem;
             border-radius: 8px;
             margin-top: 0.75rem;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            font-size: 0.8rem;
-            border: 1px solid rgba(255,255,255,0.2);
+            font-size: 0.85rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
         
-        [data-theme="dark"] .image-preview {
-            background: rgba(255,255,255,0.1);
-        }
-        
-        /* ========== QUICK ACTIONS ========== */
-        .quick-actions {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            margin-bottom: 1rem;
-        }
-        
-        .quick-btn {
-            background: var(--surface-light);
-            border: 1px solid var(--border-light);
-            color: var(--text-light);
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        [data-theme="dark"] .quick-btn {
-            background: var(--surface-dark);
-            border-color: var(--border-dark);
-            color: var(--text-dark);
-        }
-        
-        .quick-btn:hover {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
-        }
-        
-        /* ========== IMAGE BADGE ========== */
-        .image-badge-container {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
+        /* ========== QUICK BUTTONS MODERNES ========== */
+        .quick-actions-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #617589;
             margin-bottom: 0.75rem;
         }
         
+        .stApp[data-theme="dark"] .quick-actions-title {
+            color: #9dabb9;
+        }
+        
+        div[data-testid="column"] button {
+            background: white !important;
+            color: #111418 !important;
+            border: 1px solid #e5e7eb !important;
+            border-radius: 24px !important;
+            font-size: 0.85rem !important;
+            font-weight: 500 !important;
+            padding: 0.6rem 1.2rem !important;
+            transition: all 0.2s ease !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+            width: 100% !important;
+        }
+        
+        .stApp[data-theme="dark"] div[data-testid="column"] button {
+            background: #1a2632 !important;
+            color: #ffffff !important;
+            border-color: #283039 !important;
+        }
+        
+        div[data-testid="column"] button:hover {
+            background: linear-gradient(135deg, #2b8cee 0%, #1e40af 100%) !important;
+            color: white !important;
+            border-color: transparent !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(43, 140, 238, 0.3) !important;
+        }
+        
+        /* ========== IMAGE BADGE ========== */
         .image-badge {
-            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 24px;
+            font-size: 0.9rem;
             font-weight: 500;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
         }
         
-        /* ========== INPUT AREA ========== */
-        .input-container {
-            position: sticky;
-            bottom: 0;
-            background: var(--surface-light);
-            border-top: 1px solid var(--border-light);
-            padding: 1rem;
-            box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
-        }
-        
-        [data-theme="dark"] .input-container {
-            background: var(--surface-dark);
-            border-color: var(--border-dark);
-        }
-        
+        /* ========== INPUT & SEND BUTTON ========== */
         .stTextArea textarea {
-            background: var(--bg-light) !important;
-            border: 1px solid var(--border-light) !important;
-            border-radius: 12px !important;
-            color: var(--text-light) !important;
-            font-size: 0.9rem !important;
+            background: white !important;
+            border: 2px solid #e5e7eb !important;
+            border-radius: 14px !important;
+            color: #111418 !important;
+            font-size: 0.95rem !important;
             transition: all 0.2s !important;
+            padding: 0.75rem !important;
         }
         
-        [data-theme="dark"] .stTextArea textarea {
-            background: #151f28 !important;
-            border-color: var(--border-dark) !important;
-            color: var(--text-dark) !important;
+        .stApp[data-theme="dark"] .stTextArea textarea {
+            background: #1a2632 !important;
+            border-color: #283039 !important;
+            color: #ffffff !important;
         }
         
         .stTextArea textarea:focus {
-            border-color: var(--primary) !important;
-            box-shadow: 0 0 0 2px rgba(43, 140, 238, 0.1) !important;
+            border-color: #2b8cee !important;
+            box-shadow: 0 0 0 3px rgba(43, 140, 238, 0.1) !important;
         }
         
-        .stButton button {
-            background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%) !important;
+        /* Bouton Envoyer principal */
+        button[kind="primary"] {
+            background: linear-gradient(135deg, #2b8cee 0%, #1e40af 100%) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 12px !important;
+            font-weight: 600 !important;
+            font-size: 0.95rem !important;
+            padding: 0.75rem 2rem !important;
+            transition: all 0.2s !important;
+            box-shadow: 0 4px 12px rgba(43, 140, 238, 0.3) !important;
+        }
+        
+        button[kind="primary"]:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(43, 140, 238, 0.4) !important;
+        }
+        
+        /* Bouton Retirer */
+        button[key="remove_img"] {
+            background: #ef4444 !important;
             color: white !important;
             border: none !important;
             border-radius: 10px !important;
-            font-weight: 600 !important;
-            padding: 0.625rem 1.5rem !important;
-            transition: all 0.2s !important;
-            box-shadow: 0 2px 8px rgba(43, 140, 238, 0.3) !important;
+            font-size: 0.85rem !important;
+            padding: 0.5rem 1rem !important;
         }
         
-        .stButton button:hover {
-            transform: translateY(-2px) !important;
-            box-shadow: 0 4px 16px rgba(43, 140, 238, 0.4) !important;
-        }
-        
-        /* Boutons secondaires */
-        .stButton button[kind="secondary"] {
-            background: transparent !important;
-            border: 1px solid var(--border-light) !important;
-            color: var(--text-light) !important;
-            box-shadow: none !important;
-        }
-        
-        [data-theme="dark"] .stButton button[kind="secondary"] {
-            border-color: var(--border-dark) !important;
-            color: var(--text-dark) !important;
+        button[key="remove_img"]:hover {
+            background: #dc2626 !important;
         }
         
         /* ========== SIDEBAR ========== */
         section[data-testid="stSidebar"] {
-            background: var(--surface-light) !important;
-            border-right: 1px solid var(--border-light) !important;
+            background: #ffffff !important;
+            border-right: 1px solid #e5e7eb !important;
         }
         
-        [data-theme="dark"] section[data-testid="stSidebar"] {
+        .stApp[data-theme="dark"] section[data-testid="stSidebar"] {
             background: #111418 !important;
-            border-right-color: var(--border-dark) !important;
+            border-right-color: #283039 !important;
         }
         
         section[data-testid="stSidebar"] h1, 
         section[data-testid="stSidebar"] h2, 
         section[data-testid="stSidebar"] h3 {
-            color: var(--text-light);
+            color: #111418;
         }
         
-        [data-theme="dark"] section[data-testid="stSidebar"] h1,
-        [data-theme="dark"] section[data-testid="stSidebar"] h2,
-        [data-theme="dark"] section[data-testid="stSidebar"] h3 {
-            color: var(--text-dark);
+        .stApp[data-theme="dark"] section[data-testid="stSidebar"] h1,
+        .stApp[data-theme="dark"] section[data-testid="stSidebar"] h2,
+        .stApp[data-theme="dark"] section[data-testid="stSidebar"] h3 {
+            color: #ffffff;
+        }
+        
+        /* Toggle theme button */
+        button[key="theme_toggle"] {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 10px !important;
+            padding: 0.5rem 0.75rem !important;
+            font-size: 1.2rem !important;
         }
         
         /* ========== EXPANDER ========== */
         .streamlit-expanderHeader {
-            background: var(--bg-light) !important;
-            border: 1px solid var(--border-light) !important;
-            border-radius: 8px !important;
-            color: var(--text-light) !important;
+            background: #f9fafb !important;
+            border: 1px solid #e5e7eb !important;
+            border-radius: 10px !important;
             font-weight: 500 !important;
         }
         
-        [data-theme="dark"] .streamlit-expanderHeader {
-            background: rgba(255,255,255,0.03) !important;
-            border-color: var(--border-dark) !important;
-            color: var(--text-dark) !important;
+        .stApp[data-theme="dark"] .streamlit-expanderHeader {
+            background: #1a2632 !important;
+            border-color: #283039 !important;
+            color: #ffffff !important;
         }
         
         /* ========== RESPONSIVE ========== */
@@ -495,7 +450,6 @@ class InterfaceMediBot:
             .message-content {
                 max-width: 85%;
             }
-            
             .header-title {
                 font-size: 1.5rem;
             }
@@ -514,24 +468,51 @@ class InterfaceMediBot:
         if "conversation_history" not in st.session_state:
             st.session_state.conversation_history = []
         if "dark_mode" not in st.session_state:
-            st.session_state.dark_mode = True
+            st.session_state.dark_mode = False
 
     def _initialiser_assistant(self):
         """Initialise l'assistant médical GPT"""
         if "assistant" not in st.session_state:
             st.session_state.assistant = AssistantMedicalGPT()
 
+    def _nettoyer_reponse(self, texte: str) -> str:
+        """Nettoie la réponse de l'IA en supprimant les avertissements dupliqués et le HTML"""
+        # Supprimer les balises HTML
+        texte = re.sub(r'<[^>]+>', '', texte)
+        
+        # Supprimer les avertissements en double (garder seulement le premier)
+        parties = texte.split('---')
+        if len(parties) > 1:
+            # Garder seulement la partie principale (avant le premier ---)
+            texte = parties[0].strip()
+        
+        # Supprimer les avertissements intégrés
+        patterns = [
+            r'⚠️.*?AVERTISSEMENT.*?\n.*?\n.*?\n',
+            r'---\s*⚠️.*?SAMU\)\s*',
+            r'\*\*AVERTISSEMENT.*?\*\*.*?SAMU\)\.?'
+        ]
+        
+        for pattern in patterns:
+            texte = re.sub(pattern, '', texte, flags=re.DOTALL | re.IGNORECASE)
+        
+        return texte.strip()
+
     def afficher_entete(self):
         """Affiche l'en-tête de l'application"""
-        theme_attr = 'dark' if st.session_state.dark_mode else 'light'
+        # Appliquer le thème
+        theme = 'dark' if st.session_state.dark_mode else 'light'
         st.markdown(f"""
         <script>
-        document.querySelector('.stApp').setAttribute('data-theme', '{theme_attr}');
+        const app = document.querySelector('.stApp');
+        if (app) {{
+            app.setAttribute('data-theme', '{theme}');
+        }}
         </script>
         """, unsafe_allow_html=True)
         
         st.markdown("""
-        <div class="main-header">
+        <div class="modern-header">
             <div class="header-title">
                 🫁 PneumoScan AI
             </div>
@@ -549,7 +530,7 @@ class InterfaceMediBot:
             <div class="disclaimer-icon">⚠️</div>
             <div class="disclaimer-text">
                 <strong>Avertissement médical:</strong> Cet outil est destiné à l'assistance uniquement. 
-                Vérifiez toujours les informations avec un professionnel de santé. 
+                Vérifiez toujours avec un professionnel de santé. 
                 <strong>Urgence: appelez le 15 (SAMU).</strong>
             </div>
         </div>
@@ -563,12 +544,12 @@ class InterfaceMediBot:
             with col1:
                 st.markdown("### 🔧 Paramètres")
             with col2:
-                if st.button("🌓", key="theme_toggle"):
+                theme_icon = "🌙" if st.session_state.dark_mode else "☀️"
+                if st.button(theme_icon, key="theme_toggle", help="Changer le thème"):
                     st.session_state.dark_mode = not st.session_state.dark_mode
                     st.rerun()
             
             st.markdown("---")
-            
             st.markdown("### 📊 État du Système")
             
             # Vérifier GPT-4
@@ -669,7 +650,14 @@ class InterfaceMediBot:
         
         # Afficher l'historique
         for i, message in enumerate(st.session_state.messages):
+            # Nettoyer le contenu
+            content = self._nettoyer_reponse(message["content"])
+            
             if message["role"] == "user":
+                image_html = ""
+                if message.get("has_image"):
+                    image_html = f'<div class="image-preview">📸 {message.get("image_name", "image.jpg")}</div>'
+                
                 st.markdown(f"""
                 <div class="message-wrapper user">
                     <div class="avatar user">👤</div>
@@ -678,10 +666,7 @@ class InterfaceMediBot:
                             <span class="message-author">Vous</span>
                             <span class="message-time">maintenant</span>
                         </div>
-                        <div class="message-bubble user">
-                            {message["content"]}
-                            {f'<div class="image-preview">📸 {message.get("image_name", "image.jpg")}</div>' if message.get("has_image") else ""}
-                        </div>
+                        <div class="message-bubble user">{content}{image_html}</div>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -694,9 +679,7 @@ class InterfaceMediBot:
                             <span class="message-author">Dr. IA</span>
                             <span class="message-time">maintenant</span>
                         </div>
-                        <div class="message-bubble bot">
-                            {message["content"]}
-                        </div>
+                        <div class="message-bubble bot">{content}</div>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -707,7 +690,7 @@ class InterfaceMediBot:
         st.markdown("---")
         
         # Questions rapides
-        st.markdown("**💡 Questions rapides:**")
+        st.markdown('<p class="quick-actions-title">💡 Questions rapides:</p>', unsafe_allow_html=True)
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
@@ -723,6 +706,8 @@ class InterfaceMediBot:
             if st.button("🛡️ Prévention", key="q4", use_container_width=True):
                 self._envoyer_question_rapide("Comment prévenir la pneumonie ?")
         
+        st.markdown("<br>", unsafe_allow_html=True)
+        
         # Badge image + retirer
         if st.session_state.current_image:
             col_badge, col_btn = st.columns([3, 1])
@@ -737,9 +722,10 @@ class InterfaceMediBot:
         # Input
         user_input = st.text_area(
             "Votre message:",
-            placeholder="Posez votre question sur la pneumonie, les symptômes, ou uploadez une radiographie...",
+            placeholder="Posez votre question sur la pneumonie...",
             height=100,
-            key="user_input"
+            key="user_input",
+            label_visibility="collapsed"
         )
         
         col1, col2 = st.columns([4, 1])
@@ -768,7 +754,7 @@ class InterfaceMediBot:
             "content": user_input
         })
         
-        with st.spinner("🤖 Réflexion..."):
+        with st.spinner("🤖 Analyse en cours..."):
             try:
                 response = st.session_state.assistant.chat(
                     message_utilisateur=user_input,
@@ -776,14 +762,17 @@ class InterfaceMediBot:
                     conversation_history=st.session_state.conversation_history[:-1]
                 )
                 
+                # Nettoyer la réponse
+                response_clean = self._nettoyer_reponse(response)
+                
                 st.session_state.messages.append({
                     "role": "assistant",
-                    "content": response
+                    "content": response_clean
                 })
                 
                 st.session_state.conversation_history.append({
                     "role": "assistant",
-                    "content": response
+                    "content": response_clean
                 })
                 
                 if st.session_state.current_image:
@@ -793,23 +782,268 @@ class InterfaceMediBot:
                 st.rerun()
                 
             except Exception as e:
+                # Gestion des erreurs
+                error_message = f"""
+⚠️ **Erreur lors du traitement**
+Une erreur est survenue lors de l'analyse. Veuillez réessayer.
+
+Détails techniques : {str(e)[:100]}
+"""
                 st.session_state.messages.append({
                     "role": "assistant",
-                    "content": f"❌ Erreur: {str(e)}"
+                    "content": error_message
                 })
+                
+                st.session_state.conversation_history.append({
+                    "role": "assistant", 
+                    "content": error_message
+                })
+            
+            # Réinitialiser l'input utilisateur
+            st.session_state.user_input = ""
+            
+            # Rafraîchir l'affichage
+            st.rerun()
+
+    def _exporter_conversation(self):
+        """Exporte la conversation au format JSON"""
+        try:
+            import json
+            from datetime import datetime
+            
+            # Préparer les données d'export
+            export_data = {
+                "export_date": datetime.now().isoformat(),
+                "application": "PneumoScan AI",
+                "version": "1.0",
+                "messages": st.session_state.messages,
+                "metadata": {
+                    "total_messages": len(st.session_state.messages),
+                    "has_image": st.session_state.current_image is not None,
+                    "image_name": st.session_state.image_name
+                }
+            }
+            
+            # Convertir en JSON formaté
+            json_str = json.dumps(export_data, indent=2, ensure_ascii=False)
+            
+            # Créer le bouton de téléchargement
+            filename = f"conversation_pneumoscan_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                st.download_button(
+                    label="📥 Télécharger au format JSON",
+                    data=json_str,
+                    file_name=filename,
+                    mime="application/json",
+                    use_container_width=True
+                )
+            with col2:
+                if st.button("📋 Copier", use_container_width=True):
+                    st.code(json_str[:500] + "..." if len(json_str) > 500 else json_str)
+            
+        except Exception as e:
+            st.error(f"❌ Erreur d'exportation : {str(e)}")
+
+    def afficher_statistiques(self):
+        """Affiche les statistiques et informations système"""
+        with st.expander("📊 Statistiques système", expanded=False):
+            # Informations de base
+            st.markdown("### 📈 Métriques")
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Messages", len(st.session_state.messages))
+            with col2:
+                user_messages = sum(1 for m in st.session_state.messages if m["role"] == "user")
+                st.metric("Vos messages", user_messages)
+            with col3:
+                assistant_messages = sum(1 for m in st.session_state.messages if m["role"] == "assistant")
+                st.metric("Réponses IA", assistant_messages)
+            
+            st.markdown("---")
+            st.markdown("### 🖼️ État des images")
+            
+            if st.session_state.current_image:
+                st.success("✅ Image prête pour analyse")
+                st.info(f"Nom : {st.session_state.image_name}")
+            else:
+                st.info("📭 Aucune image attachée")
+            
+            st.markdown("---")
+            st.markdown("### 🤖 État de l'IA")
+            
+            if st.session_state.assistant.use_gpt4:
+                st.success("✅ GPT-4 actif")
+            else:
+                st.warning("⚠️ Mode local (réponses basiques)")
+                
+            # Tester la connexion au serveur
+            try:
+                with st.spinner("🔍 Test de connexion..."):
+                    response = requests.get("http://localhost:8000/health", timeout=3)
+                    if response.status_code == 200:
+                        data = response.json()
+                        st.success(f"✅ Serveur connecté ({response.status_code})")
+                        
+                        if data.get("model_loaded"):
+                            st.success("✅ Modèle chargé")
+                        else:
+                            st.error("❌ Modèle non chargé")
+                            
+                    else:
+                        st.error(f"❌ Serveur erreur ({response.status_code})")
+            except Exception as e:
+                st.error(f"❌ Serveur inaccessible : {str(e)[:50]}")
+
+    def afficher_guide(self):
+        """Affiche le guide d'utilisation"""
+        with st.expander("🎓 Guide d'utilisation", expanded=False):
+            st.markdown("""
+            ### **Comment utiliser PneumoScan AI**
+            
+            #### **1. 📤 Télécharger une radiographie**
+            - Utilisez le bouton dans la barre latérale
+            - Sélectionnez une image (JPG, PNG, JPEG)
+            - L'image sera automatiquement attachée à votre prochain message
+            
+            #### **2. 💬 Poser des questions**
+            - **Symptômes** : "Quels sont les symptômes de la pneumonie ?"
+            - **Causes** : "Quelles sont les causes de la pneumonie ?"
+            - **Traitements** : "Comment traiter la pneumonie ?"
+            - **Prévention** : "Comment prévenir la pneumonie ?"
+            - **Analyse d'image** : "Peux-tu analyser cette radiographie ?"
+            
+            #### **3. 🩺 Obtenir des réponses détaillées**
+            - **Avec GPT-4** : Réponses complètes avec explications
+            - **Avec modèle local** : Réponses basiques sans connexion internet
+            - **Avec image** : Analyse automatique de la radiographie
+            
+            #### **4. 🔧 Fonctionnalités avancées**
+            - **Thème sombre/clair** : Bouton 🌙/☀️ dans la barre latérale
+            - **Nouvelle conversation** : Réinitialise tout
+            - **Export** : Téléchargez la conversation en JSON
+            - **Statistiques** : Suivez l'utilisation
+            """)
+            
+            st.markdown("---")
+            st.markdown("### **⚠️ Notes importantes**")
+            st.markdown("""
+            - **Ce n'est pas un outil de diagnostic** : Consultez toujours un médecin
+            - **Les urgences** : Appelez le 15 (SAMU) immédiatement
+            - **Confidentialité** : Les conversations ne sont pas stockées sur nos serveurs
+            - **Précision** : Les résultats dépendent de la qualité des images
+            """)
+
+    def afficher_actions_rapides(self):
+        """Affiche des actions rapides en bas de l'interface"""
+        st.markdown("---")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if st.button("🔄 Rafraîchir", help="Rafraîchir l'interface", use_container_width=True):
+                st.rerun()
+        
+        with col2:
+            if st.button("📋 Exporter", help="Exporter la conversation", use_container_width=True):
+                self._exporter_conversation()
+        
+        with col3:
+            if st.button("🗑️ Effacer tout", 
+                        help="Effacer toute la conversation", 
+                        use_container_width=True,
+                        type="secondary"):
+                st.session_state.messages = []
+                st.session_state.conversation_history = []
+                st.session_state.current_image = None
+                st.session_state.image_name = None
+                if hasattr(st.session_state.assistant, 'reset_conversation'):
+                    st.session_state.assistant.reset_conversation()
                 st.rerun()
 
     def lancer_interface(self):
-        """Lance l'interface"""
+        """Lance l'interface principale"""
+        # Afficher l'en-tête avec le thème appliqué
         self.afficher_entete()
+        
+        # Afficher l'avertissement médical
         self.afficher_avertissement()
+        
+        # Layout principal en deux colonnes
+        col_chat, col_sidebar = st.columns([3, 1])
+        
+        with col_chat:
+            # Interface de chat
+            self.afficher_chat()
+            
+            # Actions rapides
+            self.afficher_actions_rapides()
+        
+        with col_sidebar:
+            # Guide d'utilisation
+            self.afficher_guide()
+            
+            # Statistiques système
+            self.afficher_statistiques()
+            
+            # Zone d'attachement d'image
+            self.afficher_attacher_image()
+        
+        # Barre latérale (doit être à la fin pour Streamlit)
         self.afficher_sidebar()
-        self.afficher_attacher_image()
-        self.afficher_chat()
 
 def main():
-    interface = InterfaceMediBot()
-    interface.lancer_interface()
+    """Fonction principale"""
+    # Vérification des dépendances et structure
+    try:
+        # Vérifier que l'assistant peut être importé
+        import os
+        
+        # Afficher un message de démarrage
+        st.info("""
+        🚀 **PneumoScan AI** - Démarrage...
+        Vérification de la configuration système.
+        """)
+        
+        # Vérifier si le serveur est accessible
+        try:
+            response = requests.get("http://localhost:8000/health", timeout=2)
+            if response.status_code != 200:
+                st.warning("⚠️ Le serveur de classification n'est pas accessible. L'analyse d'images ne fonctionnera pas.")
+        except:
+            st.warning("⚠️ Le serveur de classification n'est pas démarré. Lancez-le avec `python serveur_medical.py`")
+        
+        # Créer et lancer l'interface
+        interface = InterfaceMediBot()
+        interface.lancer_interface()
+        
+    except ImportError as e:
+        st.error(f"❌ Erreur d'importation : {str(e)}")
+        st.markdown("""
+        **Vérifiez les points suivants :**
+        1. Le fichier `assistant_medical.py` existe dans `src/chatbot/`
+        2. Tous les modules requis sont installés
+        3. La structure des dossiers est correcte
+        """)
+        
+    except Exception as e:
+        st.error(f"❌ Erreur critique : {str(e)}")
+        st.markdown("""
+        **Dépannage :**
+        1. Vérifiez que tous les services sont lancés
+        2. Consultez les logs pour plus d'informations
+        3. Redémarrez l'application
+        """)
 
+# Point d'entrée principal
 if __name__ == "__main__":
+    # Configuration du logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    
+    # Lancer l'application
     main()
