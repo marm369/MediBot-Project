@@ -71,6 +71,8 @@ class InterfaceMediBot:
         
         css = f"""
         <style>
+        /* Import Lucide Icons via CDN */
+        @import url('https://cdn.jsdelivr.net/npm/lucide-static@0.263.1/font/lucide.min.css');
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
         /* ========== GLOBAL ========== */
@@ -80,8 +82,8 @@ class InterfaceMediBot:
         
         /* ========== THÈME DYNAMIQUE ========== */
         .stApp {{
-            background: {"#101922" if theme == "dark" else "#f6f7f8"} !important;
-            color: {"#ffffff" if theme == "dark" else "#111418"} !important;
+            background: {"#0f172a" if theme == "dark" else "#f8fafc"} !important;
+            color: {"#e2e8f0" if theme == "dark" else "#0f172a"} !important;
             transition: background 0.3s ease, color 0.3s ease;
         }}
         
@@ -105,11 +107,11 @@ class InterfaceMediBot:
         
         /* ========== HEADER AMÉLIORÉ ========== */
         .modern-header {{
-            background: linear-gradient(135deg, #2b8cee 0%, #1e40af 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
             padding: 2rem 1.5rem;
             border-radius: 16px;
             margin-bottom: 1.5rem;
-            box-shadow: 0 4px 20px rgba(43, 140, 238, 0.25);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.25);
         }}
         
         .header-title {{
@@ -148,7 +150,7 @@ class InterfaceMediBot:
         
         /* ========== DISCLAIMER ========== */
         .disclaimer {{
-            background: {"rgba(245, 158, 11, 0.15)" if theme == "dark" else "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)"};
+            background: {"rgba(251, 146, 60, 0.1)" if theme == "dark" else "linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)"};
             border-left: 4px solid #f59e0b;
             border-radius: 12px;
             padding: 1rem 1.25rem;
@@ -162,6 +164,7 @@ class InterfaceMediBot:
         .disclaimer-icon {{
             font-size: 1.5rem;
             flex-shrink: 0;
+            color: #f59e0b;
         }}
         
         .disclaimer-text {{
@@ -212,11 +215,13 @@ class InterfaceMediBot:
         }}
         
         .avatar.bot {{
-            background: linear-gradient(135deg, #2b8cee 0%, #1e40af 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
         }}
         
         .avatar.user {{
             background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+            color: white;
         }}
         
         .message-content {{
@@ -238,12 +243,12 @@ class InterfaceMediBot:
         .message-author {{
             font-size: 0.9rem;
             font-weight: 600;
-            color: {"#ffffff" if theme == "dark" else "#111418"};
+            color: {"#e2e8f0" if theme == "dark" else "#0f172a"};
         }}
         
         .message-time {{
             font-size: 0.7rem;
-            color: {"#9dabb9" if theme == "dark" else "#617589"};
+            color: {"#94a3b8" if theme == "dark" else "#64748b"};
         }}
         
         .message-bubble {{
@@ -257,14 +262,14 @@ class InterfaceMediBot:
         }}
         
         .message-bubble.bot {{
-            background: {"#1a2632" if theme == "dark" else "#ffffff"};
-            border: 1px solid {"#283039" if theme == "dark" else "#e5e7eb"};
+            background: {"#1e293b" if theme == "dark" else "#ffffff"};
+            border: 1px solid {"#334155" if theme == "dark" else "#e2e8f0"};
             border-top-left-radius: 4px;
-            color: {"#ffffff" if theme == "dark" else "#111418"};
+            color: {"#e2e8f0" if theme == "dark" else "#0f172a"};
         }}
         
         .message-bubble.user {{
-            background: linear-gradient(135deg, #2b8cee 0%, #1e40af 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
             border-top-right-radius: 4px;
             color: white;
             border: none;
@@ -286,29 +291,34 @@ class InterfaceMediBot:
         .quick-actions-title {{
             font-size: 0.85rem;
             font-weight: 600;
-            color: {"#9dabb9" if theme == "dark" else "#617589"};
+            color: {"#94a3b8" if theme == "dark" else "#64748b"};
             margin-bottom: 0.75rem;
         }}
         
+            /* Les boutons rapides */
         div[data-testid="column"] button {{
-            background: {"#1a2632" if theme == "dark" else "white"} !important;
-            color: {"#ffffff" if theme == "dark" else "#111418"} !important;
-            border: 1px solid {"#283039" if theme == "dark" else "#e5e7eb"} !important;
-            border-radius: 24px !important;
-            font-size: 0.85rem !important;
-            font-weight: 500 !important;
-            padding: 0.6rem 1.2rem !important;
-            transition: all 0.2s ease !important;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
-            width: 100% !important;
-        }}
+        background: {"#1e293b" if theme == "dark" else "white"} !important;
+        border: 1px solid {"#334155" if theme == "dark" else "#e2e8f0"} !important;
+        border-radius: 24px !important;
+        padding: 0.6rem 1.2rem !important;
+        transition: all 0.2s ease !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, {"0.2" if theme == "dark" else "0.08"}) !important;
+        width: 100% !important;
+    }}
+
+    div[data-testid="column"] button span {{
+        color: {"#00FF00" if theme == "dark" else "#0f172a"} !important;
+        font-size: 0.85rem !important;
+        font-weight: 500 !important;
+    }}
+
         
         div[data-testid="column"] button:hover {{
-            background: linear-gradient(135deg, #2b8cee 0%, #1e40af 100%) !important;
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%) !important;
             color: white !important;
             border-color: transparent !important;
             transform: translateY(-2px) !important;
-            box-shadow: 0 4px 12px rgba(43, 140, 238, 0.3) !important;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
         }}
         
         /* ========== IMAGE BADGE ========== */
@@ -327,23 +337,23 @@ class InterfaceMediBot:
         
         /* ========== INPUT & SEND BUTTON ========== */
         .stTextArea textarea {{
-            background: {"#1a2632" if theme == "dark" else "white"} !important;
-            border: 2px solid {"#283039" if theme == "dark" else "#e5e7eb"} !important;
+            background: {"#1e293b" if theme == "dark" else "white"} !important;
+            border: 2px solid {"#334155" if theme == "dark" else "#e2e8f0"} !important;
             border-radius: 14px !important;
-            color: {"#ffffff" if theme == "dark" else "#111418"} !important;
+            color: {"#e2e8f0" if theme == "dark" else "#0f172a"} !important;
             font-size: 0.95rem !important;
             transition: all 0.2s !important;
             padding: 0.75rem !important;
         }}
         
         .stTextArea textarea:focus {{
-            border-color: #2b8cee !important;
-            box-shadow: 0 0 0 3px rgba(43, 140, 238, 0.1) !important;
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
         }}
         
         /* Bouton Envoyer principal */
         button[kind="primary"] {{
-            background: linear-gradient(135deg, #2b8cee 0%, #1e40af 100%) !important;
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%) !important;
             color: white !important;
             border: none !important;
             border-radius: 12px !important;
@@ -351,12 +361,30 @@ class InterfaceMediBot:
             font-size: 0.95rem !important;
             padding: 0.75rem 2rem !important;
             transition: all 0.2s !important;
-            box-shadow: 0 4px 12px rgba(43, 140, 238, 0.3) !important;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
         }}
         
         button[kind="primary"]:hover {{
             transform: translateY(-2px) !important;
-            box-shadow: 0 6px 20px rgba(43, 140, 238, 0.4) !important;
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4) !important;
+        }}
+        
+        /* Boutons actions rapides du bas (Rafraîchir, Exporter, Effacer) */
+        button[key*="action_"] {{
+            background: {"#1e293b" if theme == "dark" else "white"} !important;
+            color: {"#e2e8f0" if theme == "dark" else "#0f172a"} !important;
+            border: 1px solid {"#334155" if theme == "dark" else "#e2e8f0"} !important;
+            border-radius: 10px !important;
+            font-size: 0.9rem !important;
+            font-weight: 500 !important;
+            padding: 0.6rem 1rem !important;
+            transition: all 0.2s ease !important;
+        }}
+        
+        button[key*="action_"]:hover {{
+            background: {"#334155" if theme == "dark" else "#f1f5f9"} !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
         }}
         
         /* Bouton Retirer */
@@ -375,14 +403,18 @@ class InterfaceMediBot:
         
         /* ========== SIDEBAR ========== */
         section[data-testid="stSidebar"] {{
-            background: {"#111418" if theme == "dark" else "#ffffff"} !important;
-            border-right: 1px solid {"#283039" if theme == "dark" else "#e5e7eb"} !important;
+            background: {"#0f172a" if theme == "dark" else "#ffffff"} !important;
+            border-right: 1px solid {"#1e293b" if theme == "dark" else "#e2e8f0"} !important;
         }}
         
         section[data-testid="stSidebar"] h1, 
         section[data-testid="stSidebar"] h2, 
         section[data-testid="stSidebar"] h3 {{
-            color: {"#ffffff" if theme == "dark" else "#111418"};
+            color: {"#e2e8f0" if theme == "dark" else "#0f172a"};
+        }}
+        
+        section[data-testid="stSidebar"] p {{
+            color: {"#cbd5e1" if theme == "dark" else "#334155"};
         }}
         
         /* Toggle theme button */
@@ -402,11 +434,34 @@ class InterfaceMediBot:
         
         /* ========== EXPANDER ========== */
         .streamlit-expanderHeader {{
-            background: {"#1a2632" if theme == "dark" else "#f9fafb"} !important;
-            border: 1px solid {"#283039" if theme == "dark" else "#e5e7eb"} !important;
+            background: {"#1e293b" if theme == "dark" else "#f9fafb"} !important;
+            border: 1px solid {"#334155" if theme == "dark" else "#e2e8f0"} !important;
             border-radius: 10px !important;
             font-weight: 500 !important;
-            color: {"#ffffff" if theme == "dark" else "inherit"} !important;
+            color: {"#e2e8f0" if theme == "dark" else "#0f172a"} !important;
+            transition: all 0.2s ease !important;
+        }}
+        
+        .streamlit-expanderHeader:hover {{
+            background: {"#334155" if theme == "dark" else "#f1f5f9"} !important;
+            border-color: {"#475569" if theme == "dark" else "#cbd5e1"} !important;
+        }}
+        
+        /* Contenu de l'expander */
+        .streamlit-expanderContent {{
+            background: {"#1e293b" if theme == "dark" else "white"} !important;
+            border: 1px solid {"#334155" if theme == "dark" else "#e2e8f0"} !important;
+            border-top: none !important;
+            color: {"#cbd5e1" if theme == "dark" else "#334155"} !important;
+        }}
+        
+        /* ========== LUCIDE ICONS ========== */
+        .icon {{
+            display: inline-block;
+            width: 1.2em;
+            height: 1.2em;
+            vertical-align: middle;
+            margin-right: 0.5rem;
         }}
         
         /* ========== RESPONSIVE ========== */
@@ -449,17 +504,25 @@ class InterfaceMediBot:
 
     def afficher_entete(self):
         """Affiche l'en-tête de l'application"""
-        theme = "🌙 Mode sombre" if st.session_state.dark_mode else "☀️ Mode clair"
+        theme_icon = "🌙" if st.session_state.dark_mode else "☀️"
+        theme_text = "Mode sombre" if st.session_state.dark_mode else "Mode clair"
         
         st.markdown(f"""
         <div class="modern-header">
             <div class="header-title">
-                🫁 PneumoScan AI
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9.75 17 9 20l-1 1h8l-1-1-.75-3"/>
+                    <path d="M2 17h20"/>
+                    <path d="M14 17v-5"/>
+                    <path d="M10 17v-5"/>
+                    <path d="M12 17v-1"/>
+                </svg>
+                PneumoScan AI
             </div>
             <div class="header-subtitle">
                 <span class="status-dot"></span>
                 Assistant Médical Intelligent · Analyse de Pneumonie
-                <span style="margin-left: auto; font-size: 0.8rem; opacity: 0.8;">{theme}</span>
+                <span style="margin-left: auto; font-size: 0.8rem; opacity: 0.8;">{theme_icon} {theme_text}</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -468,7 +531,13 @@ class InterfaceMediBot:
         """Affiche l'avertissement médical"""
         st.markdown("""
         <div class="disclaimer">
-            <div class="disclaimer-icon">⚠️</div>
+            <div class="disclaimer-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                    <path d="M12 9v4"/>
+                    <path d="M12 17h.01"/>
+                </svg>
+            </div>
             <div class="disclaimer-text">
                 <strong>Avertissement médical:</strong> Cet outil est destiné à l'assistance uniquement. 
                 Vérifiez toujours avec un professionnel de santé. 
@@ -483,13 +552,12 @@ class InterfaceMediBot:
             # Toggle mode sombre/clair
             col1, col2 = st.columns([3, 1])
             with col1:
-                st.markdown("### 🔧 Paramètres")
+                st.markdown("### ⚙️ Paramètres")
             with col2:
-                # Utiliser un bouton custom avec CSS
-                theme_label = "🌙" if not st.session_state.dark_mode else "☀️"
+                theme_icon = "🌙" if not st.session_state.dark_mode else "☀️"
                 theme_help = "Passer en mode clair" if st.session_state.dark_mode else "Passer en mode sombre"
                 
-                if st.button(theme_label, key="theme_toggle", help=theme_help):
+                if st.button(theme_icon, key="theme_toggle", help=theme_help):
                     st.session_state.dark_mode = not st.session_state.dark_mode
                     st.rerun()
             
@@ -559,7 +627,7 @@ class InterfaceMediBot:
 
     def afficher_attacher_image(self):
         """Zone pour attacher une image"""
-        with st.expander("📎 Joindre une radiographie", expanded=False):
+        with st.expander("🔍 Joindre une radiographie", expanded=False):
             uploaded_file = st.file_uploader(
                 "Image JPG/PNG",
                 type=['jpg', 'jpeg', 'png'],
@@ -598,17 +666,28 @@ class InterfaceMediBot:
         
         # Afficher l'historique
         for i, message in enumerate(st.session_state.messages):
-            # Nettoyer le contenu
             content = self._nettoyer_reponse(message["content"])
             
             if message["role"] == "user":
                 image_html = ""
                 if message.get("has_image"):
-                    image_html = f'<div class="image-preview">📸 {message.get("image_name", "image.jpg")}</div>'
+                    image_html = f'''<div class="image-preview">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                            <circle cx="9" cy="9" r="2"/>
+                            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                        </svg>
+                        {message.get("image_name", "image.jpg")}
+                    </div>'''
                 
                 st.markdown(f"""
                 <div class="message-wrapper user">
-                    <div class="avatar user">👤</div>
+                    <div class="avatar user">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </div>
                     <div class="message-content">
                         <div class="message-header">
                             <span class="message-author">Vous</span>
@@ -621,7 +700,15 @@ class InterfaceMediBot:
             else:
                 st.markdown(f"""
                 <div class="message-wrapper bot">
-                    <div class="avatar bot">🤖</div>
+                    <div class="avatar bot">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect width="18" height="10" x="3" y="11" rx="2"/>
+                            <circle cx="12" cy="5" r="2"/>
+                            <path d="M12 7v4"/>
+                            <line x1="8" x2="8" y1="16" y2="16"/>
+                            <line x1="16" x2="16" y1="16" y2="16"/>
+                        </svg>
+                    </div>
                     <div class="message-content">
                         <div class="message-header">
                             <span class="message-author">Dr. IA</span>
@@ -660,7 +747,14 @@ class InterfaceMediBot:
         if st.session_state.current_image:
             col_badge, col_btn = st.columns([3, 1])
             with col_badge:
-                st.markdown(f'<div class="image-badge">📸 {st.session_state.image_name}</div>', unsafe_allow_html=True)
+                st.markdown(f'''<div class="image-badge">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                        <circle cx="9" cy="9" r="2"/>
+                        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                    </svg>
+                    {st.session_state.image_name}
+                </div>''', unsafe_allow_html=True)
             with col_btn:
                 if st.button("🗑️ Retirer", key="remove_img"):
                     st.session_state.current_image = None
@@ -710,7 +804,6 @@ class InterfaceMediBot:
                     conversation_history=st.session_state.conversation_history[:-1]
                 )
                 
-                # Nettoyer la réponse
                 response_clean = self._nettoyer_reponse(response)
                 
                 st.session_state.messages.append({
@@ -730,7 +823,6 @@ class InterfaceMediBot:
                 st.rerun()
                 
             except Exception as e:
-                # Gestion des erreurs
                 error_message = f"""
 ⚠️ **Erreur lors du traitement**
 Une erreur est survenue lors de l'analyse. Veuillez réessayer.
@@ -747,10 +839,7 @@ Détails techniques : {str(e)[:100]}
                     "content": error_message
                 })
             
-            # Réinitialiser l'input utilisateur
             st.session_state.user_input = ""
-            
-            # Rafraîchir l'affichage
             st.rerun()
 
     def _exporter_conversation(self):
@@ -759,7 +848,6 @@ Détails techniques : {str(e)[:100]}
             import json
             from datetime import datetime
             
-            # Préparer les données d'export
             export_data = {
                 "export_date": datetime.now().isoformat(),
                 "application": "PneumoScan AI",
@@ -772,10 +860,7 @@ Détails techniques : {str(e)[:100]}
                 }
             }
             
-            # Convertir en JSON formaté
             json_str = json.dumps(export_data, indent=2, ensure_ascii=False)
-            
-            # Créer le bouton de téléchargement
             filename = f"conversation_pneumoscan_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
             
             col1, col2 = st.columns([2, 1])
@@ -797,7 +882,6 @@ Détails techniques : {str(e)[:100]}
     def afficher_statistiques(self):
         """Affiche les statistiques et informations système"""
         with st.expander("📊 Statistiques système", expanded=False):
-            # Informations de base
             st.markdown("### 📈 Métriques")
             
             col1, col2, col3 = st.columns(3)
@@ -817,7 +901,7 @@ Détails techniques : {str(e)[:100]}
                 st.success("✅ Image prête pour analyse")
                 st.info(f"Nom : {st.session_state.image_name}")
             else:
-                st.info("📭 Aucune image attachée")
+                st.info("🔭 Aucune image attachée")
             
             st.markdown("---")
             st.markdown("### 🤖 État de l'IA")
@@ -827,7 +911,6 @@ Détails techniques : {str(e)[:100]}
             else:
                 st.warning("⚠️ Mode local (réponses basiques)")
                 
-            # Tester la connexion au serveur
             try:
                 with st.spinner("🔍 Test de connexion..."):
                     response = requests.get("http://localhost:8000/health", timeout=3)
@@ -891,18 +974,18 @@ Détails techniques : {str(e)[:100]}
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            if st.button("🔄 Rafraîchir", help="Rafraîchir l'interface", use_container_width=True):
+            if st.button("🔄 Rafraîchir", key="action_refresh", help="Rafraîchir l'interface", use_container_width=True):
                 st.rerun()
         
         with col2:
-            if st.button("📋 Exporter", help="Exporter la conversation", use_container_width=True):
+            if st.button("📋 Exporter", key="action_export", help="Exporter la conversation", use_container_width=True):
                 self._exporter_conversation()
         
         with col3:
             if st.button("🗑️ Effacer tout", 
+                        key="action_clear",
                         help="Effacer toute la conversation", 
-                        use_container_width=True,
-                        type="secondary"):
+                        use_container_width=True):
                 st.session_state.messages = []
                 st.session_state.conversation_history = []
                 st.session_state.current_image = None
@@ -913,52 +996,31 @@ Détails techniques : {str(e)[:100]}
 
     def lancer_interface(self):
         """Lance l'interface principale"""
-        # Appliquer le CSS selon le thème
         self._appliquer_css()
-        
-        # Afficher l'en-tête
         self.afficher_entete()
-        
-        # Afficher l'avertissement médical
         self.afficher_avertissement()
         
-        # Layout principal en deux colonnes
         col_chat, col_sidebar = st.columns([3, 1])
         
         with col_chat:
-            # Interface de chat
             self.afficher_chat()
-            
-            # Actions rapides
             self.afficher_actions_rapides()
         
         with col_sidebar:
-            # Guide d'utilisation
             self.afficher_guide()
-            
-            # Statistiques système
             self.afficher_statistiques()
-            
-            # Zone d'attachement d'image
             self.afficher_attacher_image()
         
-        # Barre latérale (doit être à la fin pour Streamlit)
         self.afficher_sidebar()
 
 def main():
     """Fonction principale"""
-    # Vérification des dépendances et structure
     try:
-        # Vérifier que l'assistant peut être importé
-        import os
-        
-        # Afficher un message de démarrage
         st.info("""
         🚀 **PneumoScan AI** - Démarrage...
         Vérification de la configuration système.
         """)
         
-        # Vérifier si le serveur est accessible
         try:
             response = requests.get("http://localhost:8000/health", timeout=2)
             if response.status_code != 200:
@@ -966,7 +1028,6 @@ def main():
         except:
             st.warning("⚠️ Le serveur de classification n'est pas démarré. Lancez-le avec `python serveur_medical.py`")
         
-        # Créer et lancer l'interface
         interface = InterfaceMediBot()
         interface.lancer_interface()
         
@@ -988,13 +1049,9 @@ def main():
         3. Redémarrez l'application
         """)
 
-# Point d'entrée principal
 if __name__ == "__main__":
-    # Configuration du logging
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
-    
-    # Lancer l'application
     main()
